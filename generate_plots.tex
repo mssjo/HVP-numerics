@@ -1,0 +1,1324 @@
+\documentclass[a4paper,11pt]{article}
+
+% This file stands as a figure-only dummy of the paper, and serves to generate
+% its more complicated figures with tikzexternal so that the results can then
+% simply be \includegraphics'd into the paper.
+
+% It relies on plot data generated with
+%  - The main numeric implementation with command 'plot images' (image_Imt*.dat)
+%  - Ditto with command 'plot E' through symlog.py (E*.dat, E*_symlog.tex)
+%  - Ditto with command 'plot Pi' (Pi*.dat)
+%  - Ditto with command 'plot J' (Jbub*.dat)
+%  - regions.gp through join_contours.py (im*.dat)
+%  - generate_plots.sage through trim_plots.sh (all the png's)
+
+
+\usepackage{../jheppub}
+
+\usepackage[utf8]{inputenc}
+\usepackage[american]{babel}
+
+\usepackage{cleveref}
+\usepackage{mathtools} % coloneq, allowdisplaybreaks
+
+\usepackage{subcaption}
+\usepackage{pgf,tikz}
+\usetikzlibrary{%
+    calc,
+    positioning,
+    patterns,
+    decorations.pathreplacing,
+    decorations.markings,
+    decorations.pathmorphing,
+    decorations.shapes,
+    shapes.geometric,
+    arrows.meta,
+    external%
+}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{fillbetween}
+
+\input{../tikz-settings.tex}
+\input{../more-tikz-settings.tex}
+\input{../scriptdiagr.tex}
+
+\newcommand{\hypergeometric}[5][]{{}_{2\hspace{-1pt}}\mathit{F}_{\hspace{-1pt}1}#1(\genfrac{}{}{0pt}{}{#2,#3}{#4}#1|#5#1)}
+\DeclareRobustCommand{\map}[2]{\mu_{\renewcommand{\scriptdiagrscale}{.2}#1#2}}
+\newcommand{\Jbub}[1]{J_\bub^{(#1)}}
+
+\renewcommand{\Re}{\mathrm{Re}}
+\renewcommand{\Im}{\mathrm{Im}}
+\renewcommand{\d}{\mathrm{d}}
+\newcommand{\rat}{\mathrm{rat}}
+\newcommand{\Reg}{\mathrm{reg}}
+\newcommand{\Div}{\mathrm{div}}
+\newcommand{\I}{\mathcal I}
+\renewcommand{\IJ}[1]{\I_J^{(#1)}}
+\newcommand{\IE}[1]{\I_E^{(#1)}}
+\newcommand{\Irat}[1]{\I_\rat^{(#1)}}
+\newcommand{\Idiv}{\I_\Div}
+
+\input{../captions.tex}
+
+\usetikzlibrary{external}
+\tikzsetexternalprefix{tikz/}
+\tikzexternalize
+
+\begin{document}
+
+%%% For elliptic.tex %%%
+
+\begin{figure}[tp]
+    \centering
+%     \tikzsetnextfilename{fig-elliptic-w1}
+%     \qplot{w1.png}
+    \tikzsetnextfilename{fig-elliptic-E1}
+    \qplot{E1q.png}
+    \tikzsetnextfilename{fig-elliptic-E2}
+    \qplot{E2q.png}
+    \tikzsetnextfilename{fig-elliptic-E3}
+    \qplot{E3q.png}
+    \figellipticcaption
+    \label{fig:elliptic}
+\end{figure}
+
+\clearpage
+
+%%% For t-tau-q.tex %%%
+
+\begin{figure}[p]
+    \begin{subfigure}[t]{.6\columnwidth}
+        \hspace{-.7cm}
+        \tikzsetnextfilename{fig-tau-left}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=.5\columnwidth, scale only axis, axis on top,
+                enlargelimits=false,
+                axis on top,
+                xlabel={$\Re(\tau)$},
+                ylabel={$\Im(\tau)$},
+                xtick={-.5,-.25,0,+.25,+.5},
+                xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
+                ytick={0,\suprad/2,\suprad,.5},
+                yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$}
+                ]
+                \addplot graphics [
+                    xmin=-.5, xmax=.5,
+                    ymin=0, ymax=.5,
+                ] {plots/tau.png};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \hspace{.7cm}
+    \begin{subfigure}[t]{.3\columnwidth}
+        \tikzsetnextfilename{fig-tau-right}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=\columnwidth, scale only axis, clip=false,
+                xmin=0, xmax=.5,
+                ymin=0, ymax=.5,
+                xlabel={$\vphantom{\Re(\tau)}$},
+                xtick={0,.111,.1667,.25,.333,.5},
+                xticklabels={$0$,$\tfrac19$,$\tfrac16$,$\tfrac14$, $\tfrac13$, $\tfrac12$},
+                ytick={0,\suprad/2,\suprad,.5},
+                yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$},
+                yticklabel pos=right
+                ]
+
+                % Shaded principal inverse image of the upper half-plane
+                \fill[shaded] (0,.5) -- (0,0)
+                    arc[start angle=180, end angle=60, radius=\subrad]
+                    arc[start angle=150, end angle=90, radius=\suprad]
+                    -- (.5,.5);
+                \draw[gray,densely dashed] (.25,0) -- (.25,{\suprad/2});
+
+                % A selection of inverse images of segments of the real line
+                \draw[spacelike] (0,0) arc[start angle=180, end angle=0, radius=\subrad/2];
+                \draw[spacelike] (0,0) arc[start angle=180, end angle=0, radius=\subrad/4];
+                \draw[spacelike] (0,0) arc[start angle=180, end angle=0, radius=\subrad/6];
+                \draw[spacelike] (0,0) arc[start angle=180, end angle=0, radius=\subrad/8];
+                \draw[spacelike] (0,0) arc[start angle=180, end angle=0, radius=\subrad/10];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/1];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/3];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/5];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/7];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/9];
+                \draw[subthr] (0,0) arc[start angle=180, end angle=0, radius=\subrad/11];
+                \draw[thick, fourpi] (+.5,0) -- (+.5,.5);
+                \draw[twopi] (.5,\suprad) arc[start angle=90, end angle=180, radius=\suprad];
+                \draw[spacelike] (.5-\subrad,0) arc[start angle=180, end angle=0, radius=\subrad/2];
+                \draw[spacelike] (.5-\subrad/3,0) arc[start angle=180, end angle=0, radius=\subrad/6];
+                \draw[spacelike] (.5-\subrad/5,0) arc[start angle=180, end angle=0, radius=\subrad/10];
+                \draw[fourpi] (\subrad,0) arc[start angle=180, end angle=0, radius=\subrad/4];
+                \draw[fourpi] (.5-\subrad/2,0) arc[start angle=180, end angle=0, radius=\subrad/4];
+                \draw[fourpi] (.5-\subrad/4,0) arc[start angle=180, end angle=0, radius=\subrad/8];
+                \draw[fourpi] (.5-\subrad/6,0) arc[start angle=180, end angle=0, radius=\subrad/12];
+                \draw[spacelike] (1/4,0) arc[start angle=180, end angle=0, radius=\subrad/4];
+
+                % The principal inverse image of the real line
+                \draw[realline, spacelike] (0,.5) -- (0,0);
+                \draw[realline, subthr] (0,0)
+                    arc[start angle=180, end angle=60, radius=\subrad]
+                    node[inner sep=0, anchor=center, pin=0:{\tiny\color{black} $t=4$}] {};
+                \draw[realline, twopi] (.5,\suprad)
+                    node[inner sep=0, anchor=center, pin=240:{\tiny\color{black} $t=16$}] {}
+                    arc[start angle=90, end angle=150, radius=\suprad];
+                \draw[realline, fourpi] (.5,\suprad) -- (.5,.5);
+
+                % Contours at fixed epsilon
+                \begin{scope}
+                    \clip (0,0) rectangle (.5,.5);
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt1.0.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.5.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.1.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.001.dat} -- cycle;
+                \end{scope}
+
+%                 % Bridge contours
+%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.50000_sbridge.dat};
+%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.50000_tbridge.dat};
+%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.90000_sbridge.dat};
+%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.90000_tbridge.dat};
+
+                % Annotations
+                \node[anchor=west,inner sep=0] at (.03,.45) {\tiny $\uparrow -\infty$};
+                \node[anchor=west,inner sep=0] at (.03,.40) {\tiny $\downarrow t=0$};
+                \node[anchor=east,inner sep=0] at (.48,.45) {\tiny $+\infty\uparrow $};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \figtaucaption
+    \label{fig:tau}
+\end{figure}
+
+
+\begin{figure}[p]
+    \centering
+    \tikzsetnextfilename{fig-q-left}
+    \begin{subfigure}[t]{.4\columnwidth}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=\columnwidth, scale only axis, axis on top,
+                xmin=-1, xmax=1,
+                ymin=-1, ymax=1,
+                ticks=none, axis lines=none
+                ]
+                \addplot graphics [
+                    xmin=-1, xmax=1,
+                    ymin=-1, ymax=1
+                ] {plots/q.png};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \hspace{1cm}
+    \begin{subfigure}[t]{.4\columnwidth}
+        \tikzsetnextfilename{fig-q-right}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=\columnwidth, scale only axis,
+                xmin=-1, xmax=1,
+                ymin=-1, ymax=1,
+                ticks=none, axis lines=none
+                ]
+                \clip (0,0) circle[radius=1];
+
+                \addqarcs[spacelike,domain=0:180]{\subrad/2}{\subrad/2}
+                \addqarcs[spacelike,domain=0:180]{\subrad/4}{\subrad/4}
+                \addqarcs[spacelike,domain=0:180]{\subrad/6}{\subrad/6}
+                \addqarcs[spacelike,domain=0:180]{\subrad/8}{\subrad/8}
+                \addqarcs[spacelike,domain=0:180]{\subrad/10}{\subrad/10}
+                \addqarcs[subthr,domain=0:180]{\subrad/1}{\subrad/1}
+                \addqarcs[subthr,domain=0:180]{\subrad/3}{\subrad/3}
+                \addqarcs[subthr,domain=0:180]{\subrad/5}{\subrad/5}
+                \addqarcs[subthr,domain=0:180]{\subrad/7}{\subrad/7}
+                \addqarcs[subthr,domain=0:180]{\subrad/9}{\subrad/9}
+                \addqarcs[subthr,domain=0:180]{\subrad/11}{\subrad/11}
+                \addqarcs[twopi,domain=0:180,samples=32]{.5}{\suprad}
+                \draw[fourpi] (-1,0) -- (-.1,0);
+                \addqarcs[spacelike,domain=0:180]{.5-\subrad/2}{\subrad/2}
+                \addqarcs[spacelike,domain=0:180]{.5-\subrad/6}{\subrad/6}
+                \addqarcs[spacelike,domain=0:180]{.5-\subrad/10}{\subrad/10}
+                \addqarcs[fourpi,domain=0:180]{\subrad*5/4}{\subrad/4}
+                \addqarcs[fourpi,domain=0:180]{.5-\subrad/4}{\subrad/4}
+                \addqarcs[fourpi,domain=0:180]{.5-\subrad/8}{\subrad/8}
+                \addqarcs[fourpi,domain=0:180]{.5-\subrad/12}{\subrad/12}
+                \addqarcs[spacelike,domain=0:180]{\subrad*7/4}{\subrad/4}
+
+                \draw[gray,thick] (0,0) circle[radius=1];
+                \draw[gray] (0,-1) -- (0,+1);
+
+                \addplot[name path=principal fourpi, realline, fourpi, domain=-1:0, samples=2] ({x*exp(-2*pi*\suprad)},0);
+                \addqarc[name path=principal subthr, realline, subthr, domain=60:180]{\subrad}{\subrad}
+                \addqarc[name path=principal twopi, realline, twopi, domain=90:150]{.5}{\suprad}
+                \addplot[name path=principal spacelike, realline, spacelike, domain=0:1, samples=2] (x,0);
+
+                \addplot[shaded] fill between [of=principal fourpi and principal twopi];
+                \addplot[shaded] fill between [of=principal subthr and principal spacelike];
+
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt1.0.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.5.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.1.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.001.dat} -- cycle;
+
+%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.50000_sbridge.dat};
+%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.50000_tbridge.dat};
+%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.90000_sbridge.dat};
+%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.90000_tbridge.dat};
+
+                \node[anchor=center, inner sep=0, pin=-45:{\tiny$\pm\infty$}] at (0,0) {};
+                \node[anchor=center, inner sep=0, pin=160:{\tiny$t=16$}] at ({-exp(-2*pi*\suprad)},0) {};
+                \node[anchor=center, inner sep=0, pin=180:{\tiny$t=4$}] at (0,{exp(-pi*\suprad}) {};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \figqcaption
+    \label{fig:q}
+\end{figure}
+
+%%% For tsun.tex %%%
+
+\begin{figure}[p]
+    \begin{subfigure}[t]{.45\columnwidth}
+        \hspace{-.7cm}
+        \tikzsetnextfilename{fig-tsun-left}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=.417\columnwidth, scale only axis, axis on top,
+                xmin=-8, xmax=16,
+                ymin=-5, ymax=5,
+                enlargelimits=false,
+                xlabel={$\Re(t_\sunset)$},
+                ylabel={$\Im(t_\sunset)$},
+                xtick={-6,-3,0,3,6,9,12,15},
+                ytick={-3,0,3},
+                ]
+                \addplot graphics [
+                    xmin=-8, xmax=16,
+                    ymin=-5, ymax=5,
+                ] {plots/tsun.png};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \hspace{.7cm}
+    \begin{subfigure}[t]{.45\columnwidth}
+        \tikzsetnextfilename{fig-tsun-right}
+        \begin{tikzpicture}[pin distance=2mm]
+            \begin{axis}[
+                width=\columnwidth, height=.417\columnwidth, scale only axis,
+                xmin=-8, xmax=16,
+                ymin=-5, ymax=5,
+                xlabel={$\vphantom{\Re(\tau)}$},
+                xtick={0,.111,.1667,.25,.333,.5},
+                xtick={-6,-3,0,3,6,9,12,15},
+                ytick={-3,0,3},
+                yticklabels={},
+                ]
+
+                % Shaded principal inverse image of the upper half-plane
+                \fill[shaded, even odd rule] (-8,-5) rectangle (16,5) (0,0) circle[radius=3];
+                % Footprint of other plots
+                \draw[gray,densely dotted] (-3,-3) rectangle (11,3);
+
+                % The two inverse images of the real line
+                \draw[realline, spacelike] (0,0) -- (1,0);
+                \draw[realline, spacelike] (9,0) -- (20,0);
+                \draw[realline, subthr] (-3,0) -- (0,0)
+                    node[inner sep=0, anchor=center, pin=90:{\tiny\color{black} $t=0$}] {};
+                \draw[realline, subthr] (-9,0) -- (-3,0);
+                \draw[realline, twopi] (3,0) arc[start angle=0, end angle=180, radius=3]
+                    node[inner sep=0, anchor=center, pin=240:{\tiny\color{black} $t=4$}] {};
+                \draw[realline, twopi] (-3,0) arc[start angle=180, end angle=360, radius=3]
+                    node[inner sep=0, anchor=center, pin=60:{\tiny\color{black} $t=16$}] {};
+                \draw[realline, fourpi] (3,0) -- (1,0)
+                    node[inner sep=0, anchor=center, pin=270:{\tiny\color{black} $\pm\infty$}] {};
+                \draw[realline, fourpi] (3,0) -- (9,0)
+                    node[inner sep=0, anchor=center, pin=270:{\tiny\color{black} $\pm\infty$}] {};
+
+%                 Contours at fixed epsilon
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt1.0.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.5.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.1.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.001.dat} -- (9,0);
+
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt1.0.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.5.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.1.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.001.dat};
+
+                % Annotations
+                \node[anchor=west,inner sep=0] at (-7.5,.40) {\tiny $\leftarrow t=0$};
+                \node[anchor=east,inner sep=0] at (15.5,.40) {\tiny $t=0\rightarrow$};
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}
+    \figtsuncaption
+    \label{fig:tsun}
+\end{figure}
+
+%%% For rho24.tex %%%
+
+\begin{figure}[p!]
+    \centering
+    \hspace{-.7cm}
+    \tikzsetnextfilename{fig-rho2-left}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis, axis on top,
+                xmin=-4, xmax=24,
+                ymin=-6, ymax=6,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+                ytick={-4,0,4},
+                xticklabel pos=top
+            ]
+            \addplot graphics [
+                xmin=-4, xmax=24,
+                ymin=-6, ymax=6,
+            ] {plots/rho2_before.png};
+        \end{axis}
+    \end{tikzpicture}
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rho2-mid}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis, axis on top,
+                xmin=-4, xmax=24,
+                ymin=-6, ymax=6,
+                xlabel={$\Re(z)$},
+                ylabel={},
+                ytick={-4,0,4},
+                yticklabels={},
+                xticklabel pos=top
+            ]
+            \addplot graphics [
+                xmin=-4, xmax=24,
+                ymin=-6, ymax=6,
+            ] {plots/rho2_after.png};
+        \end{axis}
+    \end{tikzpicture}
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rho2-right}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis,
+                xmin=-4, xmax=24,
+                ymin=-6, ymax=6,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+                ylabel={},
+                ytick={-4,0,4},
+                yticklabels={},
+                xticklabel pos=top
+            ]
+
+            \coordinate (zim1) at (4,0);
+            \coordinate (zim2) at (16,0);
+
+            \draw[realneg, branchcut] (4,0) -- (16,0);
+            \draw[realneg] (10,6) -- (10,-6);
+            \draw[realpos, nocut] (-4,0) -- (4,0) (16,0) -- (24,0);
+
+            \draw[C1] (8,+3) -- (12,+3);
+            \draw[C1] (8,-3) -- (12,-3);
+
+            \node at (18,2) {$\star$};
+        \end{axis}
+    \end{tikzpicture}
+
+    \hspace{-.7cm}
+    \tikzsetnextfilename{fig-rho4-left}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis, axis on top,
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+            ]
+            \addplot graphics [
+                xmin=-3, xmax=12,
+                ymin=-3, ymax=3,
+            ] {plots/rho4_before.png};
+        \end{axis}
+    \end{tikzpicture}
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rho4-mid}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis, axis on top,
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+                xlabel={$\Re(z)$},
+                ylabel={},
+                yticklabels={}
+            ]
+            \addplot graphics [
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+            ] {plots/rho4_after.png};
+        \end{axis}
+    \end{tikzpicture}
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rho4-right}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.3\columnwidth, height=.129\columnwidth, scale only axis,
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+                ylabel={},
+                yticklabels={}
+            ]
+
+            \coordinate (zim1) at ({3-2*sqrt(2)},0);
+            \coordinate (zim2) at ({3+2*sqrt(2)},0);
+            \coordinate (root1u) at ({-1/2*4^(2/3)*(1) - 4^(1/3)*(1) + 3},{-1/2*4^(2/3)*(sqrt(3)) - 4^(1/3)*(-sqrt(3))});
+            \coordinate (root1l) at ({-1/2*4^(2/3)*(1) - 4^(1/3)*(1) + 3},{1/2*4^(2/3)*(sqrt(3)) + 4^(1/3)*(-sqrt(3))});
+            \coordinate (root2) at ({4^(2/3) + 2*4^(1/3) + 3},0);
+
+            \begin{scope}
+                \clip (3,3) rectangle (11,-3);
+                \addplot[mark=none, realneg] table {plot_data/im0.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (root1u) -| (3,+3) -- (-3,+3) |- cycle;
+                \addplot[mark=none, realpos, nocut] table {plot_data/im0.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (root1l) -| (3,-3) -- (-3,-3) |- cycle;
+                \addplot[mark=none, realpos, nocut] table {plot_data/im0.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (root1u) -| (3,0) |- (root1l) -| (-3,0) |- cycle;
+                \addplot[mark=none, black] table {plot_data/im0.dat};
+                \draw[realneg, branchcut] (root1u) .. controls (.2,0) .. (root1l);
+            \end{scope}
+            \draw[realneg, branchcut] (-3,0) -- (root2);
+            \draw[realpos, nocut] (root2) -- (11,0);
+
+            \draw[C0] (7,+1.0) to[bend right=10] (5,+1.2);
+            \draw[C0] (5,-1.2) to[bend right=10] (7,-1.0);
+
+            % Omega boundary
+            \draw[gray, densely dotted] (0,0) circle[radius=3];
+
+            \node at (4,-1.5) {$\star$};
+        \end{axis}
+    \end{tikzpicture}
+    \figrhotwofourcaption
+    \label{fig:rho24}
+\end{figure}
+
+%%% For rhoF.tex %%%
+
+\begin{figure}[p!]
+    \def\insetxmin{8.5}
+    \def\insetxmax{9.25}
+    \def\insetymax{0.25}
+    \def\insetXmin{8}
+    \def\insetXmax{11}
+    \def\insetYmin{2}
+    \def\insetYmax{3}
+
+    \centering
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rhoF-top}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.9\columnwidth, height=.3857\columnwidth, scale only axis, axis on top,
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+                xtick={-2,0,2,4,6,8,10},
+                xticklabel pos=top
+            ]
+
+            % Main plots
+            \addplot graphics [
+                xmin=-3, xmax=12,
+                ymin=-3, ymax=0,
+            ]   {plots/hyper_before.png};
+            \addplot graphics [
+                xmin=-3, xmax=12,
+                ymin=0, ymax=3,
+            ] {plots/hyper_after.png};
+
+            % Insets
+            \addplot graphics [
+                xmin=\insetXmin, xmax=\insetXmax,
+                ymin=+\insetYmin, ymax=+\insetYmax,
+            ] {plots/hyper_after_inset.png};
+            \addplot graphics [
+                xmin=\insetXmin, xmax=\insetXmax,
+                ymin=-\insetYmin, ymax=-\insetYmax,
+            ] {plots/hyper_before_inset.png};
+
+            % Inset lines
+            \begin{scope}[gray]
+                \draw (\insetxmin,-\insetymax) rectangle (\insetxmax,\insetymax);
+                \draw (\insetXmin,+\insetYmax) |- (\insetXmax,+\insetYmin);
+                \draw (\insetxmin,+\insetymax) -- (\insetXmin,+\insetYmin);
+                \draw (\insetxmax,+\insetymax) -- (\insetXmax,+\insetYmin);
+                \draw (\insetXmin,-\insetYmax) |- (\insetXmax,-\insetYmin);
+                \draw (\insetxmin,-\insetymax) -- (\insetXmin,-\insetYmin);
+                \draw (\insetxmax,-\insetymax) -- (\insetXmax,-\insetYmin);
+            \end{scope}
+
+            % Separating line
+            \draw (-3,0) -- (11,0);
+
+        \end{axis}
+    \end{tikzpicture}
+
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-rhoF-bot}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.9\columnwidth, height=.3857\columnwidth, scale only axis,
+                xmin=-3, xmax=11,
+                ymin=-3, ymax=3,
+                xlabel={$\Re(z)$},
+                ylabel={$\Im(z)$},
+                xtick={-2,0,2,4,6,8,10}
+            ]
+
+            % Interior of shaded area imported as picture since it is beyond
+            % TikZ fillbetween's capabilities
+%             \addplot[opacity=.5] graphics [
+%                 xmin=-3, xmax=12,
+%                 ymin=-3, ymax=3,
+%             ] {plots/abs_jsun_geq1.png};
+            % Never mind -- join_contours.py brought it within those capabilities!
+            \addplot[mark=none, draw=none, fill=realextra!40, even odd rule] table {plot_data/re12.dat} -- cycle;
+%             % Visualizing the effects of join_contours.py
+%             \addplot[red, mark=o, draw=none] table {plot_data/re12.dat.log};
+
+            % All interesting points, with debugging visualization commented out
+            % zim0NM is the Mth real zero of the Nth factor of the polynomial
+            %  determining the imaginary part
+            %  (the locus of all zeroes is in plot_data/im0N.dat).
+            % xingN(u,l) is the Nth complex crossing point of the curves
+            %  in the (upper,lower) half-plane
+            \begin{scope}[every node/.style={draw,circle,inner sep=0pt}]
+
+                \coordinate (zim011) at (0,0);
+                \coordinate (zim012) at (3,0);
+%                     \node[plotII] at (zim011) {\tiny1};
+%                     \node[plotII] at (zim012) {\tiny2};
+
+                \coordinate (zim021) at ({-2*sqrt(3) + 3},0);
+                \coordinate (zim022) at (1,0);
+                \coordinate (zim023) at ({2*sqrt(3) + 3},0);
+%                     \node[plotI] at (zim021) {\tiny1};
+%                     \node[plotI] at (zim022) {\tiny2};
+%                     \node[plotI] at (zim023) {\tiny3};
+
+                \coordinate (zim031) at ({-sqrt(3)*sqrt(2*sqrt(3) + 3) + sqrt(3) + 3},0);
+                \coordinate (zim032) at ({4^(2/3) + 2*4^(1/3) + 3},0);
+                \coordinate (zim033) at ({sqrt(3)*sqrt(2*sqrt(3) + 3) + sqrt(3) + 3},0);
+%                     \node[plotIV] at (zim031) {\tiny1};
+%                     \node[plotIV] at (zim032) {\tiny2};
+%                     \node[plotIV] at (zim033) {\tiny3};
+
+                \coordinate (zre121) at (1.740622, 0); % Root of an irreducible 6th-degree polynomial
+                \coordinate (zre122) at (8.969980, 0); % this one too
+%                     \node[plotVI] at (zre121) {\tiny1};
+%                     \node[plotVI] at (zre122) {\tiny2};
+
+                \coordinate (xing1u) at ({-1/2*4^(2/3)*(1) - 4^(1/3)*(1) + 3},{-1/2*4^(2/3)*(sqrt(3)) - 4^(1/3)*(-sqrt(3))});
+                \coordinate (xing1l) at ({-1/2*4^(2/3)*(1) - 4^(1/3)*(1) + 3},{1/2*4^(2/3)*(sqrt(3)) + 4^(1/3)*(-sqrt(3))});
+                \coordinate (xing2u) at (1.26795,+1.17996); % Analytic solutions don't find this one
+                \coordinate (xing2l) at (1.26795,-1.17996);
+%                     \node at (xing1u) {\tiny1};
+%                     \node at (xing2u) {\tiny2};
+            \end{scope}
+
+%                 \addplot[mark=none, plotVII, samples=2, domain=-3:12] {0};
+%                 \addplot[mark=none, plotII] table {plot_data/im01.dat} ;
+%                 \addplot[mark=none, plotI] table {plot_data/im02.dat};
+%                 \addplot[mark=none, plotIV] table {plot_data/im03.dat};
+
+            % Piecewise curves usling clipped scopes
+            \begin{scope}
+                \clip (zim032) |- (12,.25) -- (12,3) -| (zim012) |- (12,-3) -- (12,-.25) -| cycle;
+                \addplot[mark=none, realneg, nocut] table {plot_data/im01.dat};
+                \addplot[mark=none, realpos, nocut] table {plot_data/im02.dat};
+                \addplot[mark=none, realneg, nocut] table {plot_data/im03.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (zim032) |- (12,.25) -- (12,-.25) -| cycle;
+                \addplot[mark=none, realpos] table {plot_data/im03.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (xing1u) -- (-3,2) -- (-3,-2) -- (xing1l) -- cycle;
+                \addplot[mark=none, realneg] table {plot_data/im01.dat};
+%                     \addplot[mark=none, realpos, branchcut] table {plot_data/im02.dat};
+                % Plots aren't compatible with zigzag lines, so approximate it with a bezier
+                \draw[realpos, branchcut] (xing1u) .. controls (-.65,+.55) and (-.65,-.55) .. (xing1l);
+            \end{scope}
+            \begin{scope}
+                \clip (xing1u) -- (1,+1) -| (zim022) |- (1,-1) -- (xing1l) -- cycle;
+                \addplot[mark=none, realneg] table {plot_data/im02.dat};
+                \addplot[mark=none, realpos] table {plot_data/im03.dat};
+            \end{scope}
+            \begin{scope}
+                \clip (xing1u) -- (1,+1) -| (zim022) |- (1,-1)  -- (xing1l) -- (-3,-3) -| (zim012) |- (-3,+3) -- cycle;
+                \addplot[mark=none, realpos] table {plot_data/im01.dat};
+                \addplot[mark=none, realpos, nocut] table {plot_data/im02.dat};
+                \addplot[mark=none, realneg, nocut] table {plot_data/im03.dat};
+            \end{scope}
+
+            % Cuts along the real axis
+            \draw[realpos, nocut] (-3,0) -- (zim021);
+            \draw[realpos, branchcut] (zim021) -- (zim022);
+            \draw[realneg, branchcut] (zim022) -- (zim012);
+            \draw[realpos, branchcut] (zim012) -- (zim032);
+            \draw[realneg, nocut] (zim032) -- (9,0);
+            \draw[realpos, nocut] (9,0) -- (12,0);
+
+            % Monodromy arrows
+            \begin{scope}
+                \draw[C1] (8.9,0.05) to[bend left=10] (8.9,0.3);
+                \draw[C1] (2.6,1) to[bend left=10] (2.2,.5);
+                \draw[C1] (0.45,1.3) to[bend left=10] (0.7,.7);
+                \draw[C0] (0.9,0.4) to[bend left=20] (0.5,0.2);
+                \draw[C1] (0.45,0.35) to[bend left=10] (0.15,0.2);
+                \draw[C0] (0.1,0.2) -- (-0.2,0.2);
+
+                \draw[C1] (8.9,-0.05) to[bend right=10] (8.9,-0.3);
+                \draw[C1] (2.6,-1) to[bend right=10] (2.2,-.5);
+                \draw[C1] (0.45,-1.3) to[bend right=10] (0.7,-.7);
+                \draw[C0] (0.5,-0.2) to[bend left=20] (0.9,-0.4);
+                \draw[C1] (0.45,-0.35) to[bend right=10] (0.15,-0.2);
+                \draw[C0] (-0.2,-0.2) -- (0.1,-0.2);
+            \end{scope}
+
+            % Omega boundary
+            \draw[gray, densely dotted] (0,0) circle[radius=3];
+
+            \node at (5,2) {$\star$};
+        \end{axis}
+
+    \end{tikzpicture}
+    \figrhoFcaption
+    \label{fig:rhoF}
+\end{figure}
+
+%%% For monodromy.tex %%%
+
+\begin{figure}[tp]
+    \centering
+    \newcommand{\drawaxes}{%
+        \draw[->] (-1,0) -- (2.1,0);
+        \draw[->] (0,-1) -- (0,+1);
+        \draw[thin] (1,-.05) -- (1,+.05);
+        \node at (1,.15) {\tiny $1$};}
+    \newcommand{\drawcontours}[1][]{%
+        \draw[thick,#1] (0,0) circle[radius=.5];
+        \draw[thick,-stealth,#1] (0,0) ++ (135:.5) node[above left] {$C_0$} -- +(.01,.01);
+        \draw[thick,-stealth,#1] (1,0) circle[radius=.5];
+        \draw[thick,-stealth,#1] (1,0) ++ (45:.5) node[above right] {$C_1$} -- +(.01,-.01);}
+
+    \tikzsetnextfilename{fig-monodromy-left}
+    \begin{tikzpicture}[scale=1.2]
+        \drawaxes
+        \draw[thick, plotV, branchcut] (1,0) -- (2,0);
+        \drawcontours
+    \end{tikzpicture}
+    \quad
+    \tikzsetnextfilename{fig-monodromy-mid}
+    \begin{tikzpicture}[scale=1.2]
+        \drawaxes
+        \draw[thick, plotV, branchcut] (-1,0) -- (0,0);
+        \drawcontours
+    \end{tikzpicture}
+    \quad
+    \tikzsetnextfilename{fig-monodromy-right}
+    \begin{tikzpicture}[scale=1.2]
+        \drawaxes
+        \draw[thick, plotV, branchcut] (0,0) -- (1,0);
+        \drawcontours[dashed]
+        \draw[thick] (0,.5) arc[start angle=90, end angle=270, radius=.5] -- (1,-.5) arc[start angle=270, end angle=450, radius=.5] -- cycle;
+    \end{tikzpicture}
+    \figmonodromycaption
+    \label{fig:monodromy}
+\end{figure}
+
+%%% For the worked example %%%
+
+\begin{figure}
+
+    % Label for the example coordinate
+    \newcommand{\ex}{\text{ex}}
+    % Coordinates for tstar = -2
+    \newcommand{\retaustar}{0.}
+    \newcommand{\imtaustar}{\suprad}
+    \newcommand{\rebetastar}{1.73205}
+    \newcommand{\imbetastar}{0.}
+    % Coordinates for t = 4.2
+    \newcommand{\retau}{0.263069100239244}
+    \newcommand{\imtau}{0.164915378518587}
+    \newcommand{\rebeta}{0.218217890235993}
+    \newcommand{\imbeta}{0.}
+    % Corner of the "too close to cut" zone
+    \newcommand{\recorner}{1.}
+    \newcommand{\imcorner}{0.4225}
+
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-numeric-example}
+    \begin{tikzpicture}[
+        contour/.style={black, fill=#1, decorate, decoration={triangles,segment length=5pt}},
+        integral annotation/.style={draw, rectangle, anchor=west},
+        every text node part/.style={align=left}
+        ]
+        % tau plane
+        \begin{axis}[
+                xshift=-1cm,
+                clip=false, axis on top=false,
+                width=5cm, height=5cm, scale only axis, clip=false,
+                xmin=0, xmax=.5,
+                ymin=0, ymax=.5,
+                xlabel={$\Re(\tau)$},
+                ylabel={$\Im(\tau)$},
+                xtick={0,.25,.5},
+                xticklabels={$0$,$\tfrac14$, $\tfrac12$},
+                ytick={0,\suprad/2,\suprad,.5},
+                yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$},
+                yticklabel pos=left
+            ]
+
+            % The principal inverse image of the real line
+            \draw[realline, spacelike] (0,.5) -- (0,0);
+            \draw[realline, subthr] (0,0)
+                arc[start angle=180, end angle=60, radius=\subrad];
+            \draw[realline, twopi] (.5,\suprad)
+                arc[start angle=90, end angle=150, radius=\suprad];
+            \draw[realline, fourpi] (.5,\suprad) -- (.5,.5);
+
+            % Coordinates for contours
+            \coordinate (tau contour start) at (\retau,\imtau);
+            \coordinate (tau contour end) at (\retaustar,\imtaustar);
+            \coordinate (tau contour mid) at ($(tau contour start)!.5!(tau contour end)$);
+
+            \coordinate (tau real start) at (tau contour end);
+            \coordinate (tau real end) at (0,.53);
+            \coordinate (tau real mid) at ($(tau real start)!.5!(tau real end)$);
+        \end{axis}
+
+        % tau contours
+        \draw[contour=black]
+            (tau contour start) -- (tau contour end)
+                node[pos=.6, sloped, below] {$\mathcal C_\tau(\beta_\ex)$};
+        \draw[contour=white]
+               (tau real start) -- (tau real end);
+
+        % tau points
+        \draw
+            (tau contour start)
+                % circle[radius=.1pt]
+                node [pin={[pin distance=1ex]270:{\footnotesize$
+                    \begin{aligned}
+                        \tau_\ex
+                            &= 0.263+0.165i\\
+                            &= \tfrac12 + \tfrac{\sqrt3}{6}e^{0.806i\pi}
+                    \end{aligned}$}}] {}
+            (tau contour end)
+                % circle[radius=.1pt]
+                node [pin=45:{$\tau_\star=\tfrac{i\sqrt3}{6}$}] {};
+
+        % tau annotations
+        \node[integral annotation] (IE) at (-2,7.5) {\footnotesize$
+            \begin{alignedat}{2}
+                \IE1(\beta_\star) &= (-6.020)_{<\chi} - (0.095)_{>\chi} &&= -6.115\\\IE2(\beta_\star) &= (\phantom{+}2.826)_{<\chi} + (0.001)_{>\chi} &&= +2.827
+            \end{alignedat}
+            $};
+        \draw[-latex] (IE.west) .. controls ($(IE.west)+(-1,-1)$) and ($(tau real mid)+(-2,0)$) .. (tau real mid);
+        \node[integral annotation] (Ctau) at (-1,6) {\footnotesize$
+            \begin{aligned}
+                \textstyle\int_{C_\tau(\beta_\ex)} h_1\ldots\d\tau &= 44.172+16.284i\\
+                \textstyle\int_{C_\tau(\beta_\ex)} h_2\ldots\d\tau &= \phantom{0}8.462-67.465i
+            \end{aligned}
+            $};
+        \draw[-latex] (Ctau.south) to[bend left=30] (tau contour mid);
+
+        % xi plane
+        \begin{axis}[
+                xshift=6cm,
+                clip=false, axis on top=false,
+                width=5cm, height=5cm, scale only axis,
+                xmin=0, xmax=2.5,
+                ymin=0, ymax=1.5,
+                xlabel={$\Re(\xi)$},
+                ylabel={$\Im(\xi)$},
+                xtick={0,1},
+                xticklabels={$0$,$1$},
+                ytick={0,1},
+                yticklabels={$0$,$1$}
+                ]
+            ]
+
+            % "Too close to cut" zone
+            \fill[shaded] (0,0) -- (\recorner,0) -- (\recorner,\imcorner) -- (0,1) -- cycle;
+
+            % The principal inverse image of the real line
+            \draw[spacelike, realline] (+1,0) -- (+2.5,0);
+            \draw[subthr, realline] (0,0) -- (0,1.5);
+            \draw[twopi, realline] (0,0) -- ({+sqrt(3)/2},0);
+            \draw[fourpi, realline] ({+sqrt(3)/2},0) -- (+1,0);
+
+            % Coordinates for contours
+            \coordinate (xi contour start) at (\rebeta,\imbeta);
+            \coordinate (xi contour corner) at (\recorner,\imcorner);
+            \coordinate (xi contour end) at (\rebetastar,\imbetastar);
+            \coordinate (xi contour mid) at ($(xi contour corner)!.5!(xi contour end)$);
+
+            \coordinate (xi real start) at (xi contour end);
+            \coordinate (xi real end) at (2.8,0);
+            \coordinate (xi real mid) at ($(xi real start)!.5!(xi real end)$);
+        \end{axis}
+
+        % xi contours
+        \draw[contour=black]
+               (xi contour start)
+            -- (xi contour corner)
+                node [midway, sloped, above] {$\mathcal C_\xi(\beta)$}
+            -- (xi contour end);
+        \draw[contour=white]
+               (xi real start) -- (xi real end);
+
+        % xi points
+        \draw
+           (xi contour start)
+            % circle[radius=2pt]
+            node[pin=-90:{$\beta_\ex=0.218$}] {}
+           (xi contour end)
+            % circle[radius=2pt]
+            node[pin=-60:{$\beta_\star=\sqrt{3}$}] {};
+
+        % xi annotations
+        \node[integral annotation] (Cxi) at (6.5,6) {\footnotesize$
+            \begin{aligned}
+                \textstyle\int_{\mathcal C_\xi(\beta_\ex)}g_1\ldots\d\xi &= 70.061 - 21.617i\\
+                \textstyle\int_{\mathcal C_\xi(\beta_\ex)}g_2\ldots\d\xi &= \phantom{0}2.283 - 45.262i
+            \end{aligned}
+            $};
+        \draw[-latex] (Cxi.south) to[bend left=30] (xi contour mid);
+        \node[integral annotation] (IJ) at (5.5,7.5) {\footnotesize$
+            \begin{alignedat}{2}
+                \IJ1(\beta_\star) &= (-0.897)_{<\chi} - (2\cdot10^{-4\phantom{0}})_{>\chi} &&= -0.897\\
+                \IJ2(\beta_\star) &= (\phantom{+}0.008)_{<\chi} + (1\cdot10^{-17})_{>\chi} &&= 0.008
+            \end{alignedat}
+            $};
+        \draw[-latex] (IJ.east) .. controls ($(IJ.east)+(+1,-1)$) and ($(xi real mid)+(2,2)$) .. (xi real mid);
+
+        % beta annotations
+        \node[integral annotation] (Irat) at (0,9) {\footnotesize$
+            \begin{aligned}
+                \Irat1(\beta_\ex) &= 21.034 - 2.937i\\
+                \Irat2(\beta_\ex) &= \phantom{0}2.394 - 1.602i
+            \end{aligned}$
+            \qquad $\Idiv(\beta_\ex)  = 47.842 - 8.179i$\quad};
+
+        % complete integrals
+        \node[integral annotation] (E5) at (-1.5,-3) {\footnotesize$
+            \begin{aligned}
+                G_{15}(\beta_\ex) &= \phantom{0}{-0.952}\\
+                G_{25}(\beta_\ex) &= \phantom{0}{-0.215 + \phantom{0}0.748i}\\
+                B_{5}(\beta_\ex)  &= \phantom{-}12.853\\
+                \I[\beta_\ex; G_{15}(\beta_\ex), G_{25}(\beta_\ex)] &= -10.294 + 18.144i\\
+                \boldsymbol{\bar E_5(4,t_\ex)} &\boldsymbol{= 2.559 + 18.144i}
+            \end{aligned}
+        $};
+        \node[integral annotation] (E6) at (5.5,-3) {\footnotesize$
+            \begin{aligned}
+                G_{16}(\beta_\ex) &= \phantom{-0}0\\
+                G_{26}(\beta_\ex) &= \phantom{-0}0.546\\
+                B_{6}(\beta_\ex)  &= -48.299 + 0.841i\\
+                \I[\beta_\ex; G_{16}(\beta_\ex), G_{26}(\beta_\ex)] &= \phantom{-}96.069 - 8.974i\\
+                \boldsymbol{\bar E_6(4,t_\ex)} &\boldsymbol{= 47.770 - 8.134i}
+            \end{aligned}
+        $};
+    \end{tikzpicture}
+    \fignumericexamplecaption
+    \label{fig:numeric-example}
+\end{figure}
+
+%%% For the hybrid integral analysis %%%
+
+\begin{figure}
+    \hspace{-1.5cm}
+
+    \def\hybridfile{plot_data/hybrid_err_t-2.0}
+    \input{\hybridfile_Hreg_reldiff_symlog.tex}
+
+    \tikzset{
+         SJ1/.style={plotI,   solid,              very thick},
+         SJ2/.style={plotII,  densely dashed,     very thick},
+        Hreg/.style={plotIII, densely dotted,     very thick},
+        E1h2/.style={plotIV,  densely dashdotted, very thick}
+    }
+
+    \tikzsetnextfilename{fig-hybrid}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}[
+            width=.8\textwidth, height=\Eplotheight, scale only axis,
+            xmin=3, xmax=1e8,
+            xmajorgrids=true,
+%             xlabel={$\chi$},
+            xticklabels={},
+            ymin=\symlogymin, ymax=\symlogymax,
+            ytick={\symlogsparseytick},
+            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,$-10^{-12}$,,$0$,,$-10^{-12}$,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true,
+            legend pos=outer north east
+            ]
+
+            \addplot[SJ1]  table[x=chi, y=result, col sep=tab] {\hybridfile_SJ1_reldiff_symlog.dat};
+            \addplot[SJ2]  table[x=chi, y=result, col sep=tab] {\hybridfile_SJ2_reldiff_symlog.dat};
+            \addplot[Hreg] table[x=chi, y=result, col sep=tab] {\hybridfile_Hreg_reldiff_symlog.dat};
+            \addplot[E1h2] table[x=chi, y=result, col sep=tab] {\hybridfile_E1h2_reldiff_symlog.dat};
+
+            \legend{$\IJ1$,$\IJ2$,$\IE1$,$\IE2$}
+        \end{semilogxaxis}
+        \begin{loglogaxis}[
+            shift={(0,-(\Eplotheight + \Eplotsep)},
+            width=.8\textwidth, height=\Eplotheight, scale only axis,
+            xmin=1, xmax=1e8,
+            xmajorgrids=true,
+            xlabel={$\chi$},
+            ymajorgrids=true,
+            ]
+
+            \addplot[SJ1]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ1.dat};
+            \addplot[SJ2]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ2.dat};
+            \addplot[Hreg] table[x=chi, y=dresult, col sep=tab] {\hybridfile_Hreg.dat};
+            \addplot[E1h2] table[x=chi, y=dresult, col sep=tab] {\hybridfile_E1h2.dat};
+
+%             \addplot[SJ1,  thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_SJ1.dat};
+%             \addplot[SJ2,  thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_SJ2.dat};
+%             \addplot[Hreg, thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_Hreg.dat};
+%             \addplot[E1h2, thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_E1h2.dat};
+        \end{loglogaxis}
+        \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+
+    \fighybridcaption
+    \label{fig:hybrid}
+\end{figure}
+
+%%% For the result plots %%%
+
+\begin{figure}
+    \centering
+    \tikzsetnextfilename{fig-Jbub}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=.8\textwidth, height=1.5*\Eplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax,
+            ymin=-4.5, ymax=+4.5,
+            xlabel={$t$},
+            ylabel={$\frac{1}{n!}\Jbub{n}(t)$},
+            xtick={0,4,16}, xmajorgrids=true,
+            minor xtick={-9,-8,...,23},
+            legend pos=north west, reverse legend
+            ]
+
+            \plotJbub{3}
+            \plotJbub{2}
+            \plotJbub{1}
+
+            \legend{$n=3$,$n=2$,$n=1$}
+        \end{axis}
+    \end{tikzpicture}
+    \figJbubcaption
+    \label{fig:Jbub}
+\end{figure}
+
+\begin{figure}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-masters-E1}
+    \plotE{1}{E_1(2;t)}{-24}{+4}{16}
+    \tikzsetnextfilename{fig-masters-E4}
+    \plotE{4}{\bar E_4(4;t)}{-32}{+32}{4}
+
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-masters-E2}
+    \plotE{2}{E_2(2;t)}{-4}{+24}{16}
+    \tikzsetnextfilename{fig-masters-E5}
+    \plotE{5}{\bar E_5(4;t)}{-32}{+32}{4}
+
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-masters-E3}
+    \plotE{3}{E_3(2;t)}{-16}{+16}{16}
+    \tikzsetnextfilename{fig-masters-E6}
+    \plotE{6}{\bar E_6(4;t)}{-32}{+32}{4}
+
+    \hspace{3cm}$t$\hspace{6.5cm}$t$ % Very hacky but gets the job done
+
+    \figmasterscaption
+    \label{fig:masters}
+\end{figure}
+
+\begin{figure}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-reldiff-E1}
+    \plotEsymlog{1}{E_1(2;t)}{16}
+    \tikzsetnextfilename{fig-reldiff-E4}
+    \plotEsymlog{4}{\bar E_4(4;t)}{4}
+
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-reldiff-E2}
+    \plotEsymlog{2}{E_2(2;t)}{16}
+    \tikzsetnextfilename{fig-reldiff-E5}
+    \plotEsymlog{5}{\bar E_5(4;t)}{4}
+
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-reldiff-E3}
+    \plotEsymlog{3}{E_3(2;t)}{16}
+    \tikzsetnextfilename{fig-reldiff-E6}
+    \plotEsymlog{6}{\bar E_6(4;t)}{4}
+
+    \hspace{2.7cm}$t$\hspace{6.8cm}$t$ % Very hacky but gets the job done
+
+    \figreldiffcaption
+    \label{fig:reldiff}
+\end{figure}
+
+\begin{figure}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-time}
+    \begin{tikzpicture}
+        \begin{semilogyaxis}[
+            width=.8\textwidth, height=2*\Eplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={$t$},
+            xtick={0,4,16},
+            minor xtick={-9,-8,...,23},
+            ymin=2e-3, ymax=25, ylabel={Time [seconds/sample]},
+            ymajorgrids=true, xmajorgrids=true,
+            legend pos=outer north east, legend cell align=left
+            ]
+
+            \plotTime{1}
+            \plotTime{2}
+            \plotTime{3}
+            \plotTime{4}
+            \plotTime{5}
+            \plotTime{6}
+
+            \legend{$E_1(2;t)$,$E_2(2;t)$,$E_3(2;t)$,$\bar E_4(4;t)$,$\bar E_5(4;t)$,$\bar E_6(4;t)$}
+
+        \end{semilogyaxis}
+    \end{tikzpicture}
+    \figtimecaption
+    \label{fig:time}
+\end{figure}
+
+\begin{figure}
+    \def\Eplotfile{plot_data/PiE.dat}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-PiE}
+    \begin{tikzpicture}
+        \begin{axis}[
+%                     width=\Eplotwidth,
+                width=.8\textwidth,
+                height=2*\Eplotheight, scale only axis,
+%                     ylabel={$\Re\bar\Pi_E(t)$},
+%                     ylabel={$\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                     xlabel={$t$},
+                ylabel={$\bar\Pi(t)$},
+                xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
+                minor xtick={-9,-8,...,23},
+                ymin=-245, ymax=245, ytick distance=50,
+                legend pos=outer north east, reverse legend, legend cell align=left
+                ]
+
+            %%% Real and imag together
+            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiE0, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiE0, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiE6, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE6, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiE5, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE5, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiE3, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, E3, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE3, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiE2, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, E2, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE2, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiE1, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, thick, E1, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE1, col sep=tab] {\Eplotfile};
+            \addplot[real, series, black,          restrict x to domain=\Eplotxmin:16] table[x=t, y=0RePiE, col sep=tab] {\Eplotfile};
+            \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiE, col sep=tab] {\Eplotfile};
+            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE, col sep=tab] {\Eplotfile};
+
+            \legend{rem.,$\propto\bar E_6$,$\propto\bar E_5$,$\propto E_3$,$\propto E_2$,$\propto E_1$,series,$\bar \Pi_E$}
+
+        \end{axis}
+        \begin{semilogyaxis}[
+                shift={(0,-(\Eplotheight + \Eplotsep))},
+                width=.8\textwidth,
+                height=\Eplotheight, scale only axis,
+%                     ylabel={$\delta\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={$t$},
+                ylabel={$\delta\bar\Pi(t)$},
+                ymin=1e-16, ymax=1e-5, ytick={1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
+                ]
+
+            \addplot[real, total]         table[x=t, y=eAbsRePiE, col sep=tab]  {\Eplotfile};
+            \addplot[imag, total]         table[x=t, y=eAbsImPiE, col sep=tab]  {\Eplotfile};
+            \addplot[real, thick, gray]   table[x=t, y=eAbsRePiE0, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, gray]   table[x=t, y=eAbsImPiE0, col sep=tab] {\Eplotfile};
+            \addplot[real, thick, E6]     table[x=t, y=eAbsRePiE6, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, E6]     table[x=t, y=eAbsImPiE6, col sep=tab] {\Eplotfile};
+            \addplot[real, thick, E5]     table[x=t, y=eAbsRePiE5, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, E5 ]    table[x=t, y=eAbsImPiE5, col sep=tab] {\Eplotfile};
+            \addplot[real, thick, E3]     table[x=t, y=eAbsRePiE3, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, E3]     table[x=t, y=eAbsImPiE3, col sep=tab] {\Eplotfile};
+            \addplot[real, thick, E2]     table[x=t, y=eAbsRePiE2, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, E2]     table[x=t, y=eAbsImPiE2, col sep=tab] {\Eplotfile};
+            \addplot[real, thick, E1]     table[x=t, y=eAbsRePiE1, col sep=tab] {\Eplotfile};
+            \addplot[imag, thick, E1]     table[x=t, y=eAbsImPiE1, col sep=tab] {\Eplotfile};
+            \addplot[real, series, black] table[x=t, y=0AbsRePiE, col sep=tab]  {\Eplotfile};
+
+        \end{semilogyaxis}
+        \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+
+    \figPiEcaption
+    \label{fig:PiE}
+\end{figure}
+
+
+\begin{figure}
+    \def\Jplotfile{plot_data/PiJ.dat}
+    \def\Zplotfile{plot_data/PiZ.dat}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-PiJ}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.8\textwidth,
+                height=2*\Eplotheight, scale only axis,
+%                     ylabel={$\Re\bar\Pi_J(t)$},
+%                     ylabel={$\bar\Pi_J(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                     xlabel={$t$},
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={$t$},
+                ylabel={$\bar\Pi(t)$},
+                ymin=-345, ymax=345, ytick distance=50,
+                legend pos=outer north east, reverse legend, legend cell align=left
+                ]
+
+            \addplot[real, total, seriesdotted]                                        table[x=t, y=eRePiZ, col sep=tab] {\Zplotfile};
+            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiJ0, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiJ0, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiJ111, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ111, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiJ21, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ21, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E4}, thick, E4]                      table[x=t, y=eRePiJ11, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E4, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ11, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiJ3, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E3, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ3, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiJ2, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E2, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ2, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiJ1, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, thick, E1, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ1, col sep=tab] {\Jplotfile};
+            \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiJ, col sep=tab] {\Jplotfile};
+            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ, col sep=tab] {\Jplotfile};
+
+            \legend{$\bar\Pi_\zeta$,rem.,$\propto[\Jbub1]^3$,$\propto\Jbub1\Jbub2$,$\propto[\Jbub1]^2$,$\propto\Jbub3$,$\propto\Jbub2$,$\propto\Jbub1$,$\bar\Pi_J$}
+
+        \end{axis}
+    \end{tikzpicture}
+    \figPiJcaption
+    \label{fig:PiJ}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \newcommand{\plotwidth}{.34\columnwidth}
+    \hspace{-.5cm}
+    \tikzsetnextfilename{fig-tau-err-arg}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
+            xmin=0, xmax=.5,
+            ymin=0, ymax=.5,
+            xlabel={$\Re(\tau)$},
+            ylabel={$\Im(\tau)$},
+            xtick={-.5,-.25,0,+.25,+.5},
+            xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
+            ytick={0,\suprad/2,\suprad,.5},
+            yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$}
+            ]
+            \addplot graphics [
+                    xmin=0, xmax=.5,
+                    ymin=.01, ymax=.5,
+                ] {plots/tau_t_tau.png};
+            % Real line to check figure alignment and hide ugly edge
+            \draw[thick, gray, cap=round] (0,.5) -- (0,0)
+                arc[start angle=180, end angle=60, radius=\subrad]
+                (.5,.5) -- (.5,\suprad)
+                arc[start angle=90, end angle=150, radius=\suprad];
+            % Arrow mentioned in the legend
+            \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
+        \end{axis}
+    \end{tikzpicture}
+    \tikzsetnextfilename{fig-tau-err-abs}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
+            xmin=0, xmax=.5,
+            ymin=0, ymax=.5,
+            xlabel={$\Re(\tau)$},
+%             ylabel={$\Im(\tau)$},
+            xtick={-.5,-.25,0,+.25,+.5},
+            xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
+            ytick={0,\suprad/2,\suprad,.5},
+            yticklabels={},
+            ]
+            \addplot graphics [
+                    xmin=0, xmax=.5,
+                    ymin=.018, ymax=.5,
+                ] {plots/tau_t_tau_abs.png};
+            % Real line to check figure alignment and hide ugly edge
+            \draw[thick, gray, cap=round] (0,.5) -- (0,0)
+                arc[start angle=180, end angle=60, radius=\subrad]
+                (.5,.5) -- (.5,\suprad)
+                arc[start angle=90, end angle=150, radius=\suprad];
+            % Arrow mentioned in the legend
+            \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
+        \end{axis}
+    \end{tikzpicture}
+    \tikzsetnextfilename{fig-tau-err-cb}
+    \begin{tikzpicture}
+        \begin{semilogyaxis}[
+            width=.5cm, height=\plotwidth, scale only axis, axis on top,
+            xmin=0, xmax=1,
+            ymin=1e-23, ymax=1e-17,
+            xlabel={\vphantom{$\Re(\tau)$}},
+            ylabel={$|\delta\tau|$},
+            yticklabel pos=right,
+            xtick={.5}, xticklabels={\vphantom{$\tfrac12$}}, xtick style={draw=none}]
+
+            \addplot graphics [
+                    xmin=0, xmax=1,
+                    ymin=1e-23, ymax=1e-17,
+                ] {plots/tau_t_tau_cb.png};
+        \end{semilogyaxis}
+    \end{tikzpicture}
+    \figtauerrcaption
+    \label{fig:tau-err}
+\end{figure}
+
+\end{document}

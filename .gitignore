@@ -1,0 +1,10 @@
+amflow/*
+secdec/*
+plots/*
+tikz/*
+build/*
+generate_plots.*
+!generate_plots.tex
+scripts/generate_plots.sage.py
+HVPpy.egg-info
+HVPpy/__pycache__
