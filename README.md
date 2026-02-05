@@ -2,7 +2,7 @@
 
 [![Author: Mattias Sjö](https://img.shields.io/badge/author-Mattias%20Sj%C3%B6-blue)](https://inspirehep.net/authors/2747078)
 [![Author: Pierre Vanhove](https://img.shields.io/badge/author-Pierre_Vanhove-blue)](https://pierrevanhove.github.io)
-
+[![Author: Alessandro Lupo](https://img.shields.io/badge/author-Alessandro_Lupo-blue)](https://inspirehep.net/authors/1982690)
 
 This is the implementation behind `PAPER TBA`.
 It is mainly written in Python using mpmath, with some auxiliary scripts for preparing its output for inclusion in the paper.
