@@ -11,12 +11,12 @@ It is mainly written in Python using mpmath, with some auxiliary scripts for pre
 
 Python 3.10 or later (not tested on anything older than 3.12.3)
 
-[https://github.com/secdec-research/secdec](pySecDec), installed as a Python package
+[pySecDec](https://github.com/secdec-research/secdec), installed as a Python package
 
-[https://gitlab.com/multiloop-pku/amflow](AMFlow), installed as a Mathematica package.
-AMFlow can use a variety of different backends, of which the [https://gitlab.com/feynmanintegrals/fire](FIRE)+[https://github.com/rnlg/LiteRed2](LiteRed2) combination is used here, but this can be changed in `amflow/AMFlow_defs.m`. The script `makeShortcut.m` included in `LiteRed2` can also be used to install AMFlow.
+[AMFlow](https://gitlab.com/multiloop-pku/amflow), installed as a Mathematica package.
+AMFlow can use a variety of different backends, of which the [FIRE](https://gitlab.com/feynmanintegrals/fire)+[LiteRed 2](https://github.com/rnlg/LiteRed2) combination is used here, but this can be changed in `amflow/AMFlow_defs.m`. The script `makeShortcut.m` included in `LiteRed2` can also be used to install AMFlow.
 
-[https://www.sagemath.org/](SageMath), but only for some plotting functionality.
+[SageMath](https://www.sagemath.org/), but only for some plotting functionality.
 (This was originally a Sage program, but was converted to bare Python to avoid the overhead. If redone from scratch, something even faster would be used.)
 
 ## Usage
