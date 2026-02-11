@@ -4,7 +4,7 @@
 [![Author: Pierre Vanhove](https://img.shields.io/badge/author-Pierre_Vanhove-blue)](https://pierrevanhove.github.io)
 [![Author: Alessandro Lupo](https://img.shields.io/badge/author-Alessandro_Lupo-blue)](https://inspirehep.net/authors/1982690)
 
-This is the implementation behind `PAPER TBA`.
+This is the implementation behind [manuscript in preparation].
 It is mainly written in Python using mpmath, with some auxiliary scripts for preparing its output for inclusion in the paper.
 
 ## Dependencies
@@ -19,8 +19,13 @@ AMFlow can use a variety of different backends, of which the [FIRE](https://gitl
 [SageMath](https://www.sagemath.org/), but only for some plotting functionality.
 (This was originally a Sage program, but was converted to bare Python to avoid the overhead. If redone from scratch, something even faster would be used.)
 
+## Installation
+
+Run `scripts/series.sh N` with `N` the desired order of the series expansions; this will regenerate `HVPpy/series_expansion.py` accordingly.
+Install the Python module `HVPpy`, e.g. by running `pip --install .` in the main directory.
+
 ## Usage
 
-The main functionality is provided by the Python module `HVPpy`, which is installed with `pip --install .` or similar in the top-level directory.
+The main functionality is provided by the Python module `HVPpy`.
 Its interface is provided by `main.py`; running `python main.py help` prints out instructions for it.
 Instructions for the generation of plots is found in `scprits/generate_plots.sh`.
