@@ -1,0 +1,72 @@
+% Tiny little diagrams for integral subscripts
+
+\newcommand{\scriptdiagrscale}{0.3}
+\newlength{\scriptdiagrleglen}\setlength{\scriptdiagrleglen}{0.2cm}
+\newlength{\scriptdiagrleg}\setlength{\scriptdiagrleg}{\scriptdiagrleglen}\addtolength{\scriptdiagrleg}{\bubblesize}
+\newcommand{\tad}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \path[use as bounding box] (-1.5\scriptdiagrleglen,0) rectangle (+1.5\scriptdiagrleglen,.6\tadpolesize);
+        \draw[pion] (-1.5\scriptdiagrleglen,0) -- (0,0) pic {tadpole} -- (+1.5\scriptdiagrleglen,0);}}}
+\newcommand{\bub}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \draw (0,0) pic {bubble};
+        % This (0,0) +  avoids coordinate shenanigans in tikzpicutres
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        }}}
+\newcommand{\sunset}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) -- (-\bubblesize,0) -- +(-\scriptdiagrleglen,0);
+        \draw[pion] (0,0) -- (+\bubblesize,0) -- +(+\scriptdiagrleglen,0);
+        \draw (0,0) pic {bubble};
+        }}}
+\newcommand{\bball}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        \draw (0,0) pic {bubble} pic[yscale=.4] {bubble};
+        }}}
+\newcommand{\fatcat}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        \draw (0,0) pic {bubble=40};
+        \draw (node40) pic[rotate=-40, scale=.6] {bubble};
+        }}}
+\newcommand{\catseye}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        \draw (0,0) pic {bubble} pic[xscale=.4] {bubble};
+        }}}
+
+\newcommand{\catseyeplus}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        \draw (0,0) pic {bubble={60,120,270}};
+        \draw[pion] (node60)  -- (node270);
+        \draw[pion] (node120) -- (node270);
+        }}}
+\newcommand{\catseyeplusplus}{%
+    {\tikzset{external/export next=false}\tikz[scale=\scriptdiagrscale, transform shape]{%
+        \tikzset{pion/.style={ thin }}
+        \renewcommand{\bubbleaspect}{1}
+        \draw[pion] (0,0) + (-\bubblesize,0) -- +(-\scriptdiagrleg,0);
+        \draw[pion] (0,0) + (+\bubblesize,0) -- +(+\scriptdiagrleg,0);
+        \draw (0,0) pic {bubble={60,120,240,300}};
+        \draw[pion] (node60)  to[bend right=30] (node300);
+        \draw[pion] (node240) to[bend right=30] (node120);
+        }}}

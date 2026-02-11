@@ -1,0 +1,178 @@
+% The captions are included in generate_plots.tex so that the size of the figures can be adjusted.
+% However, this means that the same caption would have to be maintained both there and where the figure is included in the main text.
+% The solution is to break them out into this file.
+
+\newcommand{\figellipticcaption}{%
+    \caption{The integrals $E_1$, $E_2$ and $E_3$ (left to right), shown as functions of the nome $q$ over the unit disk in the complex plane.
+    For each function, its value at $t=0$ (limit as $q\to1$) has been subtracted to make the features more visible.
+    The hue represents the complex argument (with \textbf{\color{red}red} and \textbf{\color{cyan}cyan} for positive and negative real values, respectively), while the shaded contours represent the magnitude logarithmically: with each successive contour, $|t|$ gets a factor of $2$ larger (brighter side) or smaller (darker side).
+    Each $t\neq 0$ corresponds to infinitely many $q$ via \cref{eq:q-to-t}, but the wedge-shaped region outlined in white corresponds to a single copy of the complex $t$-plane, with $t=0$ at its rightmost extremity; this is explored further in \cref{sec:t-tau-q}.
+    Note the branch cut on $q\in[0,1]$, which corresponds to two copies of $t\in[16,\infty)$ (see \cref{fig:q}).
+    }}
+
+
+\newcommand{\figtaucaption}{%
+    \caption{\textbf{Left}: the mapping $\tau\mapsto t$ visualized in the complex plane, covering one period in the real direction.
+%     The hue represents the complex argument (with \textbf{\color{red}red} and \textbf{\color{cyan}cyan} for positive and negative real values, respectively), while the shaded contours represent the magnitude logarithmically: with each successive contour, $|t|$ gets a factor of $2$ larger (brighter side) or smaller (darker side).
+    The complex values are represented as in \cref{fig:elliptic}.
+    The $\times$-shaped contour intersections are saddle points at $t=4$ (for instance at \mbox{$\tau=\pm\frac14+\frac{i\sqrt3}{12}$}) and $t=16$ (for instance at \mbox{$\tau=\pm\frac12+\frac{i\sqrt3}{6}$}).
+    \textbf{Right}: a sketch (to scale) of the $\Re(\tau)>0$ half of the same plot, showing a selection of the infinitely many $\tau$-plane images of the real $t$-axis, colored according to which kinematic region they reproduce: spacelike subthreshold (\mbox{$t<0$}, \textbf{\color{spacelike}blue}), timelike subthreshold (\mbox{$0<t<4$}, \textbf{\color{subthr}orange}), two-pion (\mbox{$4<t<16$}, \textbf{\color{twopi}green}) and multi-pion (\mbox{$16<t$}, \textbf{\color{fourpi}violet}).
+    The shaded area (if extended upward to infinity) contains all $t$ with $\Im(t)>0$ exactly once, with contours indicating (bottom to top) $\Im(t)=0.001$, $0.1$, $0.5$, and $1$; its boundary (bold) contains all real $t$ exactly once, ordered counterlockwise.}}
+
+\newcommand{\figqcaption}{%
+    \caption{Like \cref{fig:tau}, but showing $q\mapsto t$ over the unit disk.
+            The lines in the sketch have been extended onto the $\Re(\tau)<0$ part (lower half of the disk), and thereby produce the outline used in \cref{fig:elliptic}.
+            Note how inside the shaded region, $q$ approaches $1$ extremely slowly as $|t|$ approaches $0$, ensuring good convergence of our sums almost everywhere.
+        }}
+
+\newcommand{\figtsuncaption}{%
+    \caption[]{Like \cref{fig:tau}, but showing {\tikzexternaldisable $t_\sunset\mapsto t$} as defined in \cref{eq:t-to-tau}.
+        In the sketch on the right, the shaded area is $\Omega_>$, and the two inverse images of the real $t$-line are shown with bold colored lines as in \cref{fig:tau}.
+        The dotted rectangle indicates the region shown in \cref{fig:rho24} (bottom row) and \cref{fig:rhoF}.
+        The thin gray lines are the same contours of constant $\Im(t)$ as in \cref{fig:tau}, and the dashed ones indicate their images under the involutory mapping $z\mapsto (9z-9)/(z-9)$, which is how they appear in $\varpi_r$.}}
+
+
+\newcommand{\figrhotwofourcaption}{%
+    \caption{
+        The construction of $\rho_2(z)$ (top row) and $\rho_4(z)$ (bottom row).
+        \textbf{Left}: The principal branch of $\sqrt{(z-4)(z-16)}$ and $\sqrt[4]{z^3 - 9z^2 + 3z - 3}$, respectively, visualized in the complex plane using colors and contours like in \cref{fig:tau}.
+        \textbf{Middle}: The corrected functions $\rho_2(z)$ and $\rho_4(z)$, respectively.
+        \textbf{Right}: A schematic picture of their relation.
+        Colored lines indicate where the argument of the root [$(z-4)(z-16)$ and $z^3 - 9z^2 + 3z - 3$, respectively] is real: \textbf{\color{plotV} red} for positive values and \textbf{\color{plotII} cyan} for negative.
+        Dotted lines do not cause branch cuts.
+        Solid lines cause cuts that are removed by analytically continuing to different branches, starting on the principal branch in the region marked by $\star$ and picking up roots of unity ($-1$ and $+i$, respectively) when crossing a line in the direction indicated by the arrows.
+        Zigzag lines are left as branch cuts also in $\rho_2(z)$ or $\rho_4(z)$.
+        The dotted circle indicates the boundary between $\Omega_<$ and $\Omega_>$ (compare \cref{fig:tsun}).
+%             It can be noted that a version with cuts only along the dotted red lines is possible by assigning sheets differently, but that is not suitable for $t\mapsto\tau$.
+        }}
+
+\newcommand{\figrhoFcaption}{%
+    \caption[The function $\rho_F(z)-F_1(1)$, visualized over the same region as $\rho_4(z)$ in \cref{fig:rho24}.]{
+        \textbf{Top}:
+        The function $\rho_F(z)-F_1(1)$, visualized over the same region as $\rho_4(z)$ in \cref{fig:rho24}.
+        Subtracting the constant $F_1(1)$ makes the features more visible.
+        The upper half-plane shows $\rho_F(z)$ as used for the
+        % $\map{t}{\tau}$
+        $t\mapsto\tau$
+        relation, and the lower shows the uncorrected $F_1\big(1728/j_\sunset(z)\big)$ using the principal branch of the hypergeometric function.
+        Both are symmetric (up to phases) across the real axis.
+        The insets show the region around $z=9$, which for the uncorrected function contains the only discontinuity outside $\Omega_<$, making its removal the most important part of the construction.
+%         The discontinuity in the magnified region around $z=9$ has a particularly devastating effect on
+%         $\map{t}{\tau}$ since it is contained in $\Omega_>$, not $\Omega_<$,
+%         % $t\mapsto\tau$,
+%         % since the image of the real line under the mapping
+%         % $\map{t}{t_\sunset}$
+%         % $t\mapsto t_\sunset$
+%         % passes through it in a way that
+%         and unless remedied, it
+%         leads to very problematic interplay between $\varpi_c$ and $\varpi_r$.
+        \textbf{Bottom}:
+        A schematic picture of the construction of the correct $\rho_F(z)$,
+        using the same line conventions as in \cref{fig:rho24}: dotted for no cut, solid for removed cut, zigzag for remaining cut.
+        Negative real $z$ values only produce a cut for $F_2(z)$ and therefore do not affect the principal branch ($\star$), which is purely $F_1(z)$.
+        Positive real $z$ values only produce a cut when \mbox{$|1728/j_\sunset(z)|\geq 1$}, which holds within the \textbf{\color{realextra} orange} area.
+        The monodromies described in the text are used when crossing the solid lines to keep $\rho_F(z)$ continuous: $C_0$ ($\rightarrow$) or $C_1$ ($\leftrightarrow$) is applied when going in the direction of the arrows (recall that $C_1$ is involutory, hence the bidirectional arrow).
+        }}
+
+\newcommand{\figrhoFconstrcaption}{%
+    \caption[ A schematic version of \cref{fig:rhoF}, showing the construction of the correct $\rho_F(z)$.]{
+        A schematic version of \cref{fig:rhoF}, showing the construction of the correct $\rho_F(z)$.
+        The lines indicate where $1728/j_\sunset(z)$ (the argument of the hypergeometric functions) is real, using the same conventions as in \cref{fig:rho24}: dotted for no cut, solid for removed cut, zigzag for remaining cut.
+        Negative real values only produce a cut for $F_2(z)$ and therefore do not affect the principal branch ($\star$), which is purely $F_1(z)$.
+        Positive real values only produce a cut when $|1728/j_\sunset(z)|\geq 1$, which holds within the shaded orange area.
+        The monodromies described in the text are used when crossing the solid lines to keep $\rho_F(z)$ continuous: $C_0$ ($\rightarrow$) or $C_1$ ($\leftrightarrow$) is applied when going in the direction of the arrows (recall that $C_1$ is its own inverse, hence the bidirectional arrow).
+        }}
+
+\newcommand{\fignumericexamplecaption}{%
+    \caption{
+        Example of the process of computing $\bar E_5$ and $\bar E_6$ at $t_\ex=4.2+i\epsilon$ following \cref{eq:Ebar-detailed}, with the final summation following \cref{eq:Ebar-schematic}.
+        The integration contours are shown in the $\tau$ and $\xi$ planes, which are represented as in \cref{fig:tau}.
+        Filled triangles indicate a complex integration contour, and empty ones a real integral toward infinity (using $\theta$ for that along the imaginary $\tau$ axis).
+        The shaded area indicates the ``too close to the cut'' zone described in the definition of $\mathcal C_\xi(\beta)$.
+        For integrals using \cref{eq:hybrid-integral}, the parts from below ($<$) and above ($>$) the cutoff $\chi$ are indicated.
+        % All numbers are truncated; see \cref{tab:numeric-example} for the full numbers.
+        All numbers are much more precise than shown here, with the largest errors [those of $\IE{n}(\beta_\star)$] being on the order of $10^{-6}$.
+        % Note the presence of large cancellations, with several intermediate quantities being several orders of magnitude larger than the end result; this is even more striking when $t\in[0,4)$, where the large imaginary parts of the contours cancel to give a real result.
+        % (Of course, if the equivalent method described at the end of \cref{sec:spacelike} is used, everything is manifestly real).
+        }}
+
+\newcommand{\fighybridcaption}{%
+    \caption{
+        The four usages of \cref{eq:hybrid}, evaluated at $\beta=\beta_\star$ and shown as functions of the cutoff $\chi$.
+%           In each case, the top panel shows the total value (\linesample{totval}) along with that of the ``head'' (\linesample{headval}), i.e., $\xi<\chi$ numerically integrated, and the ``tail'' (\linesample{tailval}), i.e., $\xi>\chi$ using a series expansion.
+        The bottom panel shows the absolute error estimate of each part.
+        For easier comparison, all values (but not the errors) have been divided by the corresponding total value of the function evaluating using our preferred $\chi$.
+        This $\chi$, which is what we use elsewhere, is marked with a dot.
+        }}
+
+\newcommand{\figmonodromycaption}{%
+    \caption{The contours used in the monodromy construction, with cuts drawn as zigzag lines for the different functions involved.
+        \textbf{Left}: $F_1(z)$, cut on $[1,\infty)$.
+        \textbf{Middle}: $F_2(z)$, cut on $(-\infty,0]$.
+        \textbf{Right}: $\hypergeometric abc{\frac1z}$, showing how the combination of $C_0$ and $C_1$ results in a contour that encircles the cut without crossing it.
+        }}
+
+\newcommand{\figJbubcaption}{%
+    \caption[The function Jbub.]{
+        The functions $\Jbub{n}(t)$, normalized so that the magnitude is roughly constant in $n$.
+        Real parts are shown as solid lines, and imaginary parts as dashed lines; colors indicate different $n$ as per the plot legend.
+        Below the 2-pion threshold ($t=4$), the imaginary parts are identically zero and are not shown.
+        Above threshold, $t$ has been given a small positive imaginary part.
+        }}
+
+\newcommand{\figmasterscaption}{%
+    \caption[The six elliptic master integrals plotted as functions of $t$.]{
+        The six elliptic master integrals plotted as functions of $t$, showing the real (\Resample) and imaginary (\Imsample) parts, as well as the fifth-order series expansion around $t=0$ (\seriessample).
+%         The two- and four-pion thresholds are drawn as vertical dotted lines.
+%         Below each plot is shown the relative difference between \texttt{pySecDec} (lines with error bands) and our implementation, whose error is not visible at the scale of the plots.
+%         Also shown is the relative difference between our implementation and the series expansion.
+%         Reinterpreting the below-threshold imaginary part as errors (like in \cref{fig:abserr}) gives error bands much taller than the plots.
+        At the scale of the plots, the difference between our implementation and \texttt{pySecDec} is not visible (but see \cref{fig:reldiff}), nor are the error bands.
+        However, the absolute uncertainty of each line is shown on a logarithmic scale below each plot, using \texttt{pySecDec}'s uncertainty; the uncertainty using our method is shown as a shaded area.
+        For the series expansion, the truncation error is estimated as the magnitude of the last non-truncated term.
+        }}
+
+\newcommand{\figreldiffcaption}{%
+    \caption[Symmetric log plots of the relative difference between the three different implementations of the master integrals]{
+        Symmetric log plots of the relative difference between our results and those of \texttt{pySecDec} and the series expansion, shown similarly to \cref{fig:masters}.
+        By relative difference, we mean $[x - x_\text{ref}]/x_\text{ref}$ where $x$ is some quantity and $x_\text{ref}$ is the same quantity as computed using our method.
+        Below threshold, the imaginary part is known to be zero and the relative difference makes little sense, so in the parts of the plots that are shaded ({\setbox0=\hbox{Xg}\tikzset{external/export next=false}\tikz[baseline=\dp0]{\draw[gray, pattern=north east lines, pattern color=gray] (0,0) rectangle (\dimexpr\ht0+\dp0\relax,\dimexpr\ht0+\dp0\relax);}}) we display the actual quantities $x$ rather than the relative difference.
+        Our values (whose relative difference is zero by construction) and their error bands are shown in gray.
+        }}
+
+\newcommand{\figtimecaption}{%
+    \caption[Time consumption, measured in seconds per master integral evaluation, needed by the different evaluation methods for different $t$.]{
+        Time, measured in seconds per sample, needed to obtain the data behind \cref{fig:masters,fig:reldiff}.
+        Solid lines indicate our implementation, and dashed lines indicate \texttt{pySecDec}; colors represent different masters as per the plot legend.
+        Note that our implementation is single-threaded, whereas \texttt{pySecDec} made full use of the 16-core processor on which this data was collected.
+        }}
+
+\newcommand{\figPiEcaption}{%
+    \caption[$\bar\Pi_E$]{
+        The real (solid) and imaginary (dashed) parts of $\bar\Pi_E(t)$, and its fifth-order series expansion around $t=0$ (dotted), which has radius of convergence $4$.
+        The error bands are not visible on the scale of the plot, but the absolute uncertainties are shown on a logarithmic scale below the main panel.
+        Also shown are the contributions from individual master integrals (i.e., the term in \cref{eq:PiE} consisting of that integral times a Laurent polynomial of $t$), as well as the $E_i$-independent remainder.
+        The imaginary parts are only shown above their respective thresholds.
+        The error bands are too small to be seen at the scale of the plot, but the absolute uncertainties are shown on a logarithmic scale below the main plot.
+        }}
+
+\newcommand{\figPiJcaption}{%
+    \caption[$\bar\Pi_J$]{
+        $\bar\Pi_J(t)$, shown similarly to $\bar\Pi_E(t)$ in \cref{fig:PiE}.
+        Here, the contributions are separated based on proportionality to different products of $\Jbub{n}$.
+        Also shown is the purely real $\bar\Pi_\zeta(t)$ (dotted).
+        The uncertainties are minuscule and are not shown.
+        }}
+
+
+\newcommand{\figtauerrcaption}{%
+    \caption[]{
+        The numerical error $\delta\tau\coloneq\map{t}{\tau}\big[\map{\tau}{t}(\tau)\big]-\tau$ obtained when mapping $\tau$ to $t$ and back, shown in the $\tau$ plane similarly to \cref{fig:tau}.
+        Since $\map{\tau}{t}$ is exact to within negligible arithmetic noise
+        % (128-bit floating point numbers are used here, or $\gtrsim35$ digits of precision),
+        this effectively shows the precision of $\map{t}{\tau}$, which is clearly dominated by a smooth systematic error rather than noise.
+        The left panel illustrates the phase of $\delta\tau$ as in figs.~\ref{fig:tau},~\ref{fig:q}, etc., whereas the right shows only the absolute value to more clearly demonstrate its size.
+        The jump in error marked by the arrow corresponds to the argument of $\varpi_r$ crossing the branch cut near $z=9$ that is shown magnified in \cref{fig:rhoF}; although the discontinuity of $\rho_F$ has been removed using the monodromy, the introduction of $F_2$ of course changes its uncertainty.
+        Note also the conspicuous row of four zeroes (dark spots in the right panel).
+        These lie along the curve $|t_\sunset-9|=\sqrt{72}$, on which \cref{eq:t-to-tau} reduces to $i\varpi_c(t_\sunset)/\varpi_r(t_\sunset^*)$; evidently, this allows the errors to more or less cancel.}}
+

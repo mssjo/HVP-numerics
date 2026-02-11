@@ -1,0 +1,356 @@
+% Additional tikz settings new to the numerics paper
+
+% These are from the bounds paper - colorblind friendly!
+\definecolor{plotI}{HTML}{0077BB}
+\definecolor{plotII}{HTML}{33BBEE}
+\definecolor{plotIII}{HTML}{009988}
+\definecolor{plotIV}{HTML}{EE7733}
+\definecolor{plotV}{HTML}{CC3311}
+\definecolor{plotVI}{HTML}{DDAA33}
+\definecolor{plotVII}{HTML}{AA3377}
+
+\colorlet{E1}{plotI}
+\colorlet{E2}{plotIII}
+\colorlet{E3}{plotV}
+\colorlet{E4}{plotIV}
+\colorlet{E5}{plotVI}
+\colorlet{E6}{plotVII}
+\colorlet{realextra}{plotIV}
+
+\tikzset{
+    branchcut/.style={decorate, decoration={zigzag, segment length=1mm, amplitude=.4mm}, rounded corners=.01pt},
+    realpos/.style={thick, plotV},
+    realneg/.style={thick, plotII},
+    nocut/.style={densely dotted},
+    C0/.style={-{>[scale=.7]}},
+    C1/.style={{<[scale=.7]}-{>[scale=.7]}},
+    realline/.style={line width=2pt, miter cap},
+    realline shadow/.style={white, dashed, thick},
+    }
+
+% Sub- and above-threshold arc radii
+\def\subrad{0.16666667} % = 1/6
+\def\suprad{0.28867513} % = sqrt(3)/6
+
+% Arguments: (options) center radius
+\newcommand{\addqarc}[3][]{%
+    \addplot[#1] (%
+        {exp(-2*pi*(#3)*sin(x))*cos(360*(#2+(#3)*cos(x)))},%
+        {exp(2*pi*-(#3)*sin(x))*sin(360*(#2+(#3)*cos(x)))});}
+\newcommand{\addqarcs}[3][]{\addqarc[#1]{#2}{#3}\addqarc[#1]{-(#2)}{#3}}
+
+\newcommand{\qplot}[1]{
+    \begin{subfigure}[t]{.3\columnwidth}
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=\columnwidth, height=\columnwidth, scale only axis, axis on top,
+                xmin=-1, xmax=1,
+                ymin=-1, ymax=1,
+                ticks=none, axis lines=none
+                ]
+                \addplot graphics [
+                    xmin=-1, xmax=1,
+                    ymin=-1, ymax=1
+                ] {\plotdir/#1};
+                \addqarc[realline shadow, domain=60:180]{\subrad}{\subrad}
+                \addqarc[realline shadow, domain=0:120]{-\subrad}{\subrad}
+                \addqarc[realline shadow, domain=90:150]{.5}{\suprad}
+                \addqarc[realline shadow, domain=30:90]{-.5}{\suprad}
+            \end{axis}
+        \end{tikzpicture}
+    \end{subfigure}}
+
+\pgfplotsset{
+    every axis/.style={set layers},
+    tcontour/.style={very thin, gray, mark=none, domain=-100:100, restrict y to domain=#1}}
+
+% The remainder is for the result plots.
+% Preliminary versions with more variety can be found in test_plots_v2.tex
+
+\tikzset{
+    threshold/.style={dash pattern=on 0pt off 2pt, cap=round, line width=1.5pt, opacity=.6},
+    imdash/.style={dash pattern=on 3pt off 2.5pt},
+    seriesdotted/.style={dash pattern=on 1pt off 1pt},
+    real/.style={plotI, very thick, solid},
+    imag/.style={plotIV, very thick, imdash},
+    series/.style={real, thick, seriesdotted},
+    secdec/.style={real, thick, dash pattern=on 3pt off 1pt},
+    ours/.style={real, thick, solid},
+    errorband/.style={opacity=.5},
+    total/.style={line width=2pt, black}}
+
+\newlength{\legendwidth}\setlength{\legendwidth}{19.5pt}
+\pgfplotsset{
+    complex legend/.style={legend image code/.code={
+        \draw [real, #1] (0pt,.5ex) -- (\legendwidth,.5ex);
+        \draw [imag, #1] (0pt,-.2ex) -- (\legendwidth,-.2ex);
+        }},
+%     complex legend with PSD/.style={legend image code/.code={
+%         \fill [#1, draw=none, secdec] (0pt,-.5ex) rectangle (\legendwidth, 1ex);
+%         \draw [#1, real] (0pt,.5ex) -- (\legendwidth,.5ex);
+%         \draw [#1, imag] (0pt,0ex) -- (\legendwidth,0ex);
+%         }},
+    }
+
+\newcommand{\plotE}[5]{%
+    \begin{tikzpicture}
+        \def\Eplotfile{\plotdir/E#1.dat}
+        \def\Eplotlabel{#2}
+        \def\Eplotymin{#3}
+        \def\Eplotymax{#4}
+        \def\Eplotthreshold{#5}
+        \begin{axis}[
+                width=\Eplotwidth, height=\Eplotheight, scale only axis,
+                ylabel={$\Eplotlabel$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xticklabels={},
+                ymin=\Eplotymin, ymax=\Eplotymax,
+                ]
+            \drawzerolines{\Eplotxmin}{\Eplotxmax}{\Eplotymin}{\Eplotymax}
+
+            \addplot[real]   table[x=t, y=eRe, col sep=tab] {\Eplotfile};
+            \addplot[imag]   table[x=t, y=eIm, col sep=tab, restrict x to domain=\Eplotthreshold:\Eplotxmax] {\Eplotfile};
+
+            \addplot[series] table[x=t, y=0Re, col sep=tab] {\Eplotfile};
+
+        \end{axis}
+
+        \begin{semilogyaxis}[
+                shift={(0,-(\doublenormEplotheight + \Eplotsep))},
+                width=\Eplotwidth, height=\doublenormEplotheight, scale only axis,
+                ylabel={$\delta\Eplotlabel$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={\xlabel},
+                ymin=\Eplotlogymin, ymax=\Eplotlogymax,
+                ytick={1e-3,1e-6,1e-9,1e-12},
+                minor ytick={1e-1,1e-2,1e-4,1e-5,1e-7,1e-8,1e-10,1e-11,1e-13,1e-14},
+                ymajorgrids=true
+                ]
+
+            \addplot[series] table[x=t, y=0AbsRe, col sep=tab] {\Eplotfile};
+            \addplot[draw=none, name path=zero, domain=\Eplotxmin:\Eplotxmax, samples=2] {\Eplotlogymin};
+            \addplot[real]                        table[x=t, y=sAbsRe, col sep=tab] {\Eplotfile};
+            \addplot[draw=none, name path=real]   table[x=t, y=eAbsRe, col sep=tab] {\Eplotfile};
+            \addplot[real, errorband] fill between[of=zero and real];
+            \addplot[imag]                        table[x=t, y=sAbsIm, col sep=tab] {\Eplotfile};
+            \addplot[draw=none, name path=imag]   table[x=t, y=eAbsIm, col sep=tab] {\Eplotfile};
+            \addplot[imag, errorband] fill between[of=zero and imag];
+
+        \end{semilogyaxis}
+        \useasboundingbox (0,-\doublenormEplotheight) + (0,-\Eplotsep) + (0,-.5cm);  % Force larger bounding box
+    \end{tikzpicture}}
+
+\newcommand{\plotTime}[1]{
+    \addplot[imag, ours  , E#1, complex legend={E#1}] table[x=t, y expr=\thisrow{eTime}/1e9] {\plotdir/E#1.dat};
+    \addplot[imag, secdec, E#1, forget plot         ] table[x=t, y expr=\thisrow{sTime}/1e9] {\plotdir/E#1.dat};
+    }
+
+
+\newcommand{\plotJbub}[1]{%
+    \addplot[real, E#1, complex legend={E#1}] table[x=t, y=ReJ#1, col sep=tab] {\plotdir/Jbub#1.dat};
+    \addplot[imag, E#1, forget plot, restrict x to domain=4:\Eplotxmax] table[x=t, y=ImJ#1, col sep=tab] {\plotdir/Jbub#1.dat};
+    }
+
+\newcommand{\drawzerolines}[4]{
+            \draw[thin, gray] (#1, 0) -- (#2, 0);
+            \draw[thin, gray] (0, #3) -- (0, #4);
+            }
+
+\newcommand{\newsetlength}[2]{\newlength{#1}\setlength{#1}{#2}}
+\newsetlength{\Eplotwidth}{6cm}
+\newsetlength{\Eplotheight}{3cm}
+\newsetlength{\Eplotsep}{1mm}
+\newsetlength{\normEplotheight}{.8cm}
+\newsetlength{\doublenormEplotheight}{2\normEplotheight}\addtolength{\doublenormEplotheight}{\Eplotsep}
+\newsetlength{\symlogEplotheight}{.7\Eplotheight}
+
+\newcommand{\Eplotxmin}{-8}
+\newcommand{\Eplotxmax}{+24}
+\newcommand{\Eplotlogymin}{1e-15}
+\newcommand{\Eplotlogymax}{1}
+\newcommand{\xlabel}{}
+
+\newcommand{\samplelength}{23pt}
+\newcommand{\sample}[1]{\tikz[baseline=-0.25ex]{
+    \draw[real, secdec, #1] (0,0) -- (\samplelength,0);
+    \draw[real, ours,   #1] (0,.5ex) -- (\samplelength,.5ex);
+    }}
+\newcommand{\Resample}{%
+    blue, solid:%
+    \tikzset{external/export next=false}
+    \tikz[baseline=-0.5ex]{
+        \draw[real] (0,0) -- (19.5pt,0);
+        }}
+\newcommand{\Imsample}{%
+    orange, dashed:%
+    \tikzset{external/export next=false}
+    \tikz[baseline=-0.6ex]{
+        \draw[imag] (0,0) -- (19.5pt,0);
+        }}
+\newcommand{\seriessample}{%
+    blue, dotted:%
+    \tikzset{external/export next=false}
+    \tikz[baseline=-0.6ex]{
+        \draw[real, series] (0,0) -- (\samplelength,0);
+        }}
+
+\newcommand{\linesample}[1]{%
+    \tikzset{external/export next=false}
+    \tikz[baseline=-0.6ex]{
+        \draw[#1] (0,0) -- (19.5pt,0);
+        }}
+
+
+\newcommand{\plotEsymlog}[3]{%
+    \begin{tikzpicture}
+        \def\Eplotfile{\plotdir/E#1_symlog.dat}
+        \def\Eplotlabel{#2}
+        \def\Eplotthreshold{#3}
+        \input{\plotdir/E#1_symlog.tex}
+        \begin{axis}[
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={},
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Re\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,,$0$,,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true
+            ]
+            \addplot[real, series, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=0NormRe] {\Eplotfile};
+
+            \addplot[draw=none, name path=upper] table[x=t, y=eNormMaxRe] {\Eplotfile};
+            \addplot[draw=none, name path=lower] table[x=t, y=eNormMinRe] {\Eplotfile};
+            \addplot[real, errorband, gray] fill between[of=lower and upper];
+
+            \addplot[real] table[x=t, y=sNormRe] {\Eplotfile};
+            \addplot[draw=none, name path=upper] table[x=t, y=sNormMaxRe] {\Eplotfile};
+            \addplot[draw=none, name path=lower] table[x=t, y=sNormMinRe] {\Eplotfile};
+            \addplot[real, errorband] fill between[of=lower and upper];
+
+        \end{axis}
+
+        \begin{axis}[
+            shift={(0,-(\symlogEplotheight + \Eplotsep))},
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={\xlabel},
+            xtick={0,4,16}, xmajorgrids=true,
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Im\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,,$0$,,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true,
+            axis background/.style={%
+                preaction={
+                    path picture={
+                        \path[pattern=north east lines, pattern color=gray!50] (axis cs:\Eplotxmin,\symlogymax) rectangle (axis cs:\Eplotthreshold,\symlogymin);
+                    }}}
+            ]
+
+            \addplot[imag, gray, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eIm] {\Eplotfile};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eMaxIm] {\Eplotfile};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eMinIm] {\Eplotfile};
+            \addplot[imag, errorband, gray] fill between[of=lower and upper];
+
+            \addplot[imag, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sIm] {\Eplotfile};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sMaxIm] {\Eplotfile};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sMinIm] {\Eplotfile};
+            \addplot[imag, errorband] fill between[of=lower and upper];
+
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=eNormMaxIm] {\Eplotfile};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=eNormMinIm] {\Eplotfile};
+            \addplot[imag, errorband, gray] fill between[of=lower and upper];
+
+            \addplot[imag, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormIm] {\Eplotfile};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormMaxIm] {\Eplotfile};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormMinIm] {\Eplotfile};
+            \addplot[imag, errorband] fill between[of=lower and upper];
+
+        \end{axis}
+        \useasboundingbox (0,-\symlogEplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+    }
+
+\newsetlength{\hybridplotwidth}{.8\Eplotwidth}
+\newsetlength{\hybridplotheight}{\symlogEplotheight}
+
+\tikzset{
+    totval/.style={plotI, thick, solid},
+    headval/.style={plotII, thick, densely dashed},
+    tailval/.style={plotIII, thick, densely dotted},
+    }
+
+
+% From https://tex.stackexchange.com/questions/58548/is-it-possible-to-change-the-color-of-a-single-bar-when-the-bar-plot-is-based-on
+\pgfplotsset{
+    discard if/.style 2 args={
+        x filter/.code={
+            \edef\tempa{\thisrow{#1}}
+            \edef\tempb{#2}
+            \ifx\tempa\tempb
+                \def\pgfmathresult{inf}
+            \fi
+        }
+    },
+    discard if not/.style 2 args={
+        x filter/.code={
+            \edef\tempa{\thisrow{#1}}
+            \edef\tempb{#2}
+            \ifx\tempa\tempb
+            \else
+                \def\pgfmathresult{inf}
+            \fi
+        }
+    }
+}
+
+\newcommand{\plothybrid}[9]{%
+    \def\hybridfile{\plotdir/hybrid_err_t-2.0.dat}
+    \def\plainname{#1}
+    \def\prettyname{#2}
+    \def\chimin{#3}
+    \def\chiref{#4}
+    \def\chimax{#5}
+    \def\relmin{#6}
+    \def\relmax{#7}
+    \def\valatchiref{#8}
+    \def\errmin{#9}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}[
+            width=\hybridplotwidth, height=\hybridplotheight, scale only axis,
+            xmin=\chimin, xmax=\chimax,
+%             ymin=\relmin, ymax=\relmax,
+            xticklabels={},
+            ylabel={$\prettyname (\text{relative})$}
+%             legend pos=north east, reverse legend
+            ]
+            \addplot[mark=*] coordinates { (\chiref, 1) };
+%             \addplot[tailval] table[x=chi, y expr={\thisrow{tail}/\valatchiref}, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+%             \addplot[headval] table[x=chi, y expr={\thisrow{head}/\valatchiref}, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+            \addplot[totval] table[x=chi, y expr={\thisrow{result}/\valatchiref}, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+
+%             \legend{ref.,total,head,tail};
+        \end{semilogxaxis}
+        \begin{loglogaxis}[
+            shift={(0,-(\hybridplotheight + \Eplotsep))},
+            xmin=\chimin, xmax=\chimax,
+            ymin=\errmin,
+            width=\hybridplotwidth, height=\hybridplotheight, scale only axis,
+            xlabel={$\chi$}, xticklabel pos=bottom,
+            ylabel={$\delta\prettyname$}
+            ]
+            \addplot[tailval] table[x=chi, y=dtail, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+            \addplot[headval] table[x=chi, y=dhead, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+            \addplot[totval] table[x=chi, y=dresult, discard if not={source}{\plainname}, col sep=tab] {\hybridfile};
+        \end{loglogaxis}
+
+        \useasboundingbox (0,-1.2\hybridplotheight) + (0,-.8cm); % Force larger bounding box
+    \end{tikzpicture}}

@@ -13,7 +13,7 @@
 %  - generate_plots.sage through trim_plots.sh (all the png's)
 
 
-\usepackage{../jheppub}
+\usepackage{jheppub}
 
 \usepackage[utf8]{inputenc}
 \usepackage[american]{babel}
@@ -40,9 +40,9 @@
 \pgfplotsset{compat=1.18}
 \usepgfplotslibrary{fillbetween}
 
-\input{../tikz-settings.tex}
-\input{../more-tikz-settings.tex}
-\input{../scriptdiagr.tex}
+\input{tikz-settings.tex}
+\input{more-tikz-settings.tex}
+\input{scriptdiagr.tex}
 
 \newcommand{\hypergeometric}[5][]{{}_{2\hspace{-1pt}}\mathit{F}_{\hspace{-1pt}1}#1(\genfrac{}{}{0pt}{}{#2,#3}{#4}#1|#5#1)}
 \DeclareRobustCommand{\map}[2]{\mu_{\renewcommand{\scriptdiagrscale}{.2}#1#2}}
@@ -60,7 +60,9 @@
 \newcommand{\Irat}[1]{\I_\rat^{(#1)}}
 \newcommand{\Idiv}{\I_\Div}
 
-\input{../captions.tex}
+\input{captions.tex}
+
+\newcommand{\plotdir}{../plots}
 
 \usetikzlibrary{external}
 \tikzsetexternalprefix{tikz/}
@@ -107,7 +109,7 @@
                 \addplot graphics [
                     xmin=-.5, xmax=.5,
                     ymin=0, ymax=.5,
-                ] {plots/tau.png};
+                ] {\plotdir/tau.png};
             \end{axis}
         \end{tikzpicture}
     \end{subfigure}
@@ -170,17 +172,11 @@
                 % Contours at fixed epsilon
                 \begin{scope}
                     \clip (0,0) rectangle (.5,.5);
-                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt1.0.dat} -- cycle;
-                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.5.dat} -- cycle;
-                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.1.dat} -- cycle;
-                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {plot_data/image_Imt0.001.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {\plotdir/image_Imt1.0.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {\plotdir/image_Imt0.5.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {\plotdir/image_Imt0.1.dat} -- cycle;
+                    \addplot[very thin, gray, mark=none] table [x={Retau},y={Imtau}] {\plotdir/image_Imt0.001.dat} -- cycle;
                 \end{scope}
-
-%                 % Bridge contours
-%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.50000_sbridge.dat};
-%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.50000_tbridge.dat};
-%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.90000_sbridge.dat};
-%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(tau)},y={Im(tau)}] {plot_data/t0.90000_tbridge.dat};
 
                 % Annotations
                 \node[anchor=west,inner sep=0] at (.03,.45) {\tiny $\uparrow -\infty$};
@@ -208,7 +204,7 @@
                 \addplot graphics [
                     xmin=-1, xmax=1,
                     ymin=-1, ymax=1
-                ] {plots/q.png};
+                ] {\plotdir/q.png};
             \end{axis}
         \end{tikzpicture}
     \end{subfigure}
@@ -257,15 +253,10 @@
                 \addplot[shaded] fill between [of=principal fourpi and principal twopi];
                 \addplot[shaded] fill between [of=principal subthr and principal spacelike];
 
-                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt1.0.dat} -- cycle;
-                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.5.dat} -- cycle;
-                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.1.dat} -- cycle;
-                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {plot_data/image_Imt0.001.dat} -- cycle;
-
-%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.50000_sbridge.dat};
-%                 \addplot[densely dashed, twopi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.50000_tbridge.dat};
-%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.90000_sbridge.dat};
-%                 \addplot[densely dashed, fourpi, mark=none] table [x={Re(q)},y={Im(q)}] {plot_data/t0.90000_tbridge.dat};
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {\plotdir/image_Imt1.0.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {\plotdir/image_Imt0.5.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {\plotdir/image_Imt0.1.dat} -- cycle;
+                \addplot[very thin, gray, mark=none] table [x={Req},y={Imq}] {\plotdir/image_Imt0.001.dat} -- cycle;
 
                 \node[anchor=center, inner sep=0, pin=-45:{\tiny$\pm\infty$}] at (0,0) {};
                 \node[anchor=center, inner sep=0, pin=160:{\tiny$t=16$}] at ({-exp(-2*pi*\suprad)},0) {};
@@ -297,7 +288,7 @@
                 \addplot graphics [
                     xmin=-8, xmax=16,
                     ymin=-5, ymax=5,
-                ] {plots/tsun.png};
+                ] {\plotdir/tsun.png};
             \end{axis}
         \end{tikzpicture}
     \end{subfigure}
@@ -337,15 +328,15 @@
                     node[inner sep=0, anchor=center, pin=270:{\tiny\color{black} $\pm\infty$}] {};
 
 %                 Contours at fixed epsilon
-                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt1.0.dat} -- (9,0);
-                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.5.dat} -- (9,0);
-                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.1.dat} -- (9,0);
-                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {plot_data/image_Imt0.001.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {\plotdir/image_Imt1.0.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {\plotdir/image_Imt0.5.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {\plotdir/image_Imt0.1.dat} -- (9,0);
+                \addplot[tcontour=-5:5] table [x={Rezc},y={Imzc}] {\plotdir/image_Imt0.001.dat} -- (9,0);
 
-                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt1.0.dat};
-                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.5.dat};
-                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.1.dat};
-                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {plot_data/image_Imt0.001.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {\plotdir/image_Imt1.0.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {\plotdir/image_Imt0.5.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {\plotdir/image_Imt0.1.dat};
+                \addplot[tcontour=-5:5, densely dashed] table [x={Rezr},y={Imzr}] {\plotdir/image_Imt0.001.dat};
 
                 % Annotations
                 \node[anchor=west,inner sep=0] at (-7.5,.40) {\tiny $\leftarrow t=0$};
@@ -376,7 +367,7 @@
             \addplot graphics [
                 xmin=-4, xmax=24,
                 ymin=-6, ymax=6,
-            ] {plots/rho2_before.png};
+            ] {\plotdir/rho2_before.png};
         \end{axis}
     \end{tikzpicture}
     \hspace{-.5cm}
@@ -395,7 +386,7 @@
             \addplot graphics [
                 xmin=-4, xmax=24,
                 ymin=-6, ymax=6,
-            ] {plots/rho2_after.png};
+            ] {\plotdir/rho2_after.png};
         \end{axis}
     \end{tikzpicture}
     \hspace{-.5cm}
@@ -440,7 +431,7 @@
             \addplot graphics [
                 xmin=-3, xmax=12,
                 ymin=-3, ymax=3,
-            ] {plots/rho4_before.png};
+            ] {\plotdir/rho4_before.png};
         \end{axis}
     \end{tikzpicture}
     \hspace{-.5cm}
@@ -457,7 +448,7 @@
             \addplot graphics [
                 xmin=-3, xmax=11,
                 ymin=-3, ymax=3,
-            ] {plots/rho4_after.png};
+            ] {\plotdir/rho4_after.png};
         \end{axis}
     \end{tikzpicture}
     \hspace{-.5cm}
@@ -481,19 +472,19 @@
 
             \begin{scope}
                 \clip (3,3) rectangle (11,-3);
-                \addplot[mark=none, realneg] table {plot_data/im0.dat};
+                \addplot[mark=none, realneg] table {\plotdir/im0.dat};
             \end{scope}
             \begin{scope}
                 \clip (root1u) -| (3,+3) -- (-3,+3) |- cycle;
-                \addplot[mark=none, realpos, nocut] table {plot_data/im0.dat};
+                \addplot[mark=none, realpos, nocut] table {\plotdir/im0.dat};
             \end{scope}
             \begin{scope}
                 \clip (root1l) -| (3,-3) -- (-3,-3) |- cycle;
-                \addplot[mark=none, realpos, nocut] table {plot_data/im0.dat};
+                \addplot[mark=none, realpos, nocut] table {\plotdir/im0.dat};
             \end{scope}
             \begin{scope}
                 \clip (root1u) -| (3,0) |- (root1l) -| (-3,0) |- cycle;
-                \addplot[mark=none, black] table {plot_data/im0.dat};
+                \addplot[mark=none, black] table {\plotdir/im0.dat};
                 \draw[realneg, branchcut] (root1u) .. controls (.2,0) .. (root1l);
             \end{scope}
             \draw[realneg, branchcut] (-3,0) -- (root2);
@@ -541,21 +532,21 @@
             \addplot graphics [
                 xmin=-3, xmax=12,
                 ymin=-3, ymax=0,
-            ]   {plots/hyper_before.png};
+            ]   {\plotdir/rhoF_before.png};
             \addplot graphics [
                 xmin=-3, xmax=12,
                 ymin=0, ymax=3,
-            ] {plots/hyper_after.png};
+            ] {\plotdir/rhoF_after.png};
 
             % Insets
             \addplot graphics [
                 xmin=\insetXmin, xmax=\insetXmax,
                 ymin=+\insetYmin, ymax=+\insetYmax,
-            ] {plots/hyper_after_inset.png};
+            ] {\plotdir/rhoF_after_inset.png};
             \addplot graphics [
                 xmin=\insetXmin, xmax=\insetXmax,
                 ymin=-\insetYmin, ymax=-\insetYmax,
-            ] {plots/hyper_before_inset.png};
+            ] {\plotdir/rhoF_before_inset.png};
 
             % Inset lines
             \begin{scope}[gray]
@@ -591,16 +582,16 @@
 %             \addplot[opacity=.5] graphics [
 %                 xmin=-3, xmax=12,
 %                 ymin=-3, ymax=3,
-%             ] {plots/abs_jsun_geq1.png};
+%             ] {\plotdir/abs_jsun_geq1.png};
             % Never mind -- join_contours.py brought it within those capabilities!
-            \addplot[mark=none, draw=none, fill=realextra!40, even odd rule] table {plot_data/re12.dat} -- cycle;
+            \addplot[mark=none, draw=none, fill=realextra!40, even odd rule] table {\plotdir/re12.dat} -- cycle;
 %             % Visualizing the effects of join_contours.py
-%             \addplot[red, mark=o, draw=none] table {plot_data/re12.dat.log};
+%             \addplot[red, mark=o, draw=none] table {\plotdir/re12.dat.log};
 
             % All interesting points, with debugging visualization commented out
             % zim0NM is the Mth real zero of the Nth factor of the polynomial
             %  determining the imaginary part
-            %  (the locus of all zeroes is in plot_data/im0N.dat).
+            %  (the locus of all zeroes is in \plotdir/im0N.dat).
             % xingN(u,l) is the Nth complex crossing point of the curves
             %  in the (upper,lower) half-plane
             \begin{scope}[every node/.style={draw,circle,inner sep=0pt}]
@@ -638,38 +629,38 @@
             \end{scope}
 
 %                 \addplot[mark=none, plotVII, samples=2, domain=-3:12] {0};
-%                 \addplot[mark=none, plotII] table {plot_data/im01.dat} ;
-%                 \addplot[mark=none, plotI] table {plot_data/im02.dat};
-%                 \addplot[mark=none, plotIV] table {plot_data/im03.dat};
+%                 \addplot[mark=none, plotII] table {\plotdir/im01.dat} ;
+%                 \addplot[mark=none, plotI] table {\plotdir/im02.dat};
+%                 \addplot[mark=none, plotIV] table {\plotdir/im03.dat};
 
             % Piecewise curves usling clipped scopes
             \begin{scope}
                 \clip (zim032) |- (12,.25) -- (12,3) -| (zim012) |- (12,-3) -- (12,-.25) -| cycle;
-                \addplot[mark=none, realneg, nocut] table {plot_data/im01.dat};
-                \addplot[mark=none, realpos, nocut] table {plot_data/im02.dat};
-                \addplot[mark=none, realneg, nocut] table {plot_data/im03.dat};
+                \addplot[mark=none, realneg, nocut] table {\plotdir/im01.dat};
+                \addplot[mark=none, realpos, nocut] table {\plotdir/im02.dat};
+                \addplot[mark=none, realneg, nocut] table {\plotdir/im03.dat};
             \end{scope}
             \begin{scope}
                 \clip (zim032) |- (12,.25) -- (12,-.25) -| cycle;
-                \addplot[mark=none, realpos] table {plot_data/im03.dat};
+                \addplot[mark=none, realpos] table {\plotdir/im03.dat};
             \end{scope}
             \begin{scope}
                 \clip (xing1u) -- (-3,2) -- (-3,-2) -- (xing1l) -- cycle;
-                \addplot[mark=none, realneg] table {plot_data/im01.dat};
-%                     \addplot[mark=none, realpos, branchcut] table {plot_data/im02.dat};
+                \addplot[mark=none, realneg] table {\plotdir/im01.dat};
+%                     \addplot[mark=none, realpos, branchcut] table {\plotdir/im02.dat};
                 % Plots aren't compatible with zigzag lines, so approximate it with a bezier
                 \draw[realpos, branchcut] (xing1u) .. controls (-.65,+.55) and (-.65,-.55) .. (xing1l);
             \end{scope}
             \begin{scope}
                 \clip (xing1u) -- (1,+1) -| (zim022) |- (1,-1) -- (xing1l) -- cycle;
-                \addplot[mark=none, realneg] table {plot_data/im02.dat};
-                \addplot[mark=none, realpos] table {plot_data/im03.dat};
+                \addplot[mark=none, realneg] table {\plotdir/im02.dat};
+                \addplot[mark=none, realpos] table {\plotdir/im03.dat};
             \end{scope}
             \begin{scope}
                 \clip (xing1u) -- (1,+1) -| (zim022) |- (1,-1)  -- (xing1l) -- (-3,-3) -| (zim012) |- (-3,+3) -- cycle;
-                \addplot[mark=none, realpos] table {plot_data/im01.dat};
-                \addplot[mark=none, realpos, nocut] table {plot_data/im02.dat};
-                \addplot[mark=none, realneg, nocut] table {plot_data/im03.dat};
+                \addplot[mark=none, realpos] table {\plotdir/im01.dat};
+                \addplot[mark=none, realpos, nocut] table {\plotdir/im02.dat};
+                \addplot[mark=none, realneg, nocut] table {\plotdir/im03.dat};
             \end{scope}
 
             % Cuts along the real axis
@@ -952,7 +943,7 @@
 \begin{figure}
     \hspace{-1.5cm}
 
-    \def\hybridfile{plot_data/hybrid_err_t-2.0}
+    \def\hybridfile{\plotdir/hybrid_err_t-2.0}
     \input{\hybridfile_Hreg_reldiff_symlog.tex}
 
     \tikzset{
@@ -1119,7 +1110,7 @@
 \end{figure}
 
 \begin{figure}
-    \def\Eplotfile{plot_data/PiE.dat}
+    \def\Eplotfile{\plotdir/PiE.dat}
     \hspace{-1cm}
     \tikzsetnextfilename{fig-PiE}
     \begin{tikzpicture}
@@ -1197,8 +1188,8 @@
 
 
 \begin{figure}
-    \def\Jplotfile{plot_data/PiJ.dat}
-    \def\Zplotfile{plot_data/PiZ.dat}
+    \def\Jplotfile{\plotdir/PiJ.dat}
+    \def\Zplotfile{\plotdir/PiZ.dat}
     \hspace{-1cm}
     \tikzsetnextfilename{fig-PiJ}
     \begin{tikzpicture}
@@ -1244,81 +1235,81 @@
 \end{figure}
 
 
-\begin{figure}
-    \centering
-    \newcommand{\plotwidth}{.34\columnwidth}
-    \hspace{-.5cm}
-    \tikzsetnextfilename{fig-tau-err-arg}
-    \begin{tikzpicture}
-        \begin{axis}[
-            width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
-            xmin=0, xmax=.5,
-            ymin=0, ymax=.5,
-            xlabel={$\Re(\tau)$},
-            ylabel={$\Im(\tau)$},
-            xtick={-.5,-.25,0,+.25,+.5},
-            xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
-            ytick={0,\suprad/2,\suprad,.5},
-            yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$}
-            ]
-            \addplot graphics [
-                    xmin=0, xmax=.5,
-                    ymin=.01, ymax=.5,
-                ] {plots/tau_t_tau.png};
-            % Real line to check figure alignment and hide ugly edge
-            \draw[thick, gray, cap=round] (0,.5) -- (0,0)
-                arc[start angle=180, end angle=60, radius=\subrad]
-                (.5,.5) -- (.5,\suprad)
-                arc[start angle=90, end angle=150, radius=\suprad];
-            % Arrow mentioned in the legend
-            \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
-        \end{axis}
-    \end{tikzpicture}
-    \tikzsetnextfilename{fig-tau-err-abs}
-    \begin{tikzpicture}
-        \begin{axis}[
-            width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
-            xmin=0, xmax=.5,
-            ymin=0, ymax=.5,
-            xlabel={$\Re(\tau)$},
+% \begin{figure}
+%     \centering
+%     \newcommand{\plotwidth}{.34\columnwidth}
+%     \hspace{-.5cm}
+%     \tikzsetnextfilename{fig-tau-err-arg}
+%     \begin{tikzpicture}
+%         \begin{axis}[
+%             width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
+%             xmin=0, xmax=.5,
+%             ymin=0, ymax=.5,
+%             xlabel={$\Re(\tau)$},
 %             ylabel={$\Im(\tau)$},
-            xtick={-.5,-.25,0,+.25,+.5},
-            xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
-            ytick={0,\suprad/2,\suprad,.5},
-            yticklabels={},
-            ]
-            \addplot graphics [
-                    xmin=0, xmax=.5,
-                    ymin=.018, ymax=.5,
-                ] {plots/tau_t_tau_abs.png};
-            % Real line to check figure alignment and hide ugly edge
-            \draw[thick, gray, cap=round] (0,.5) -- (0,0)
-                arc[start angle=180, end angle=60, radius=\subrad]
-                (.5,.5) -- (.5,\suprad)
-                arc[start angle=90, end angle=150, radius=\suprad];
-            % Arrow mentioned in the legend
-            \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
-        \end{axis}
-    \end{tikzpicture}
-    \tikzsetnextfilename{fig-tau-err-cb}
-    \begin{tikzpicture}
-        \begin{semilogyaxis}[
-            width=.5cm, height=\plotwidth, scale only axis, axis on top,
-            xmin=0, xmax=1,
-            ymin=1e-23, ymax=1e-17,
-            xlabel={\vphantom{$\Re(\tau)$}},
-            ylabel={$|\delta\tau|$},
-            yticklabel pos=right,
-            xtick={.5}, xticklabels={\vphantom{$\tfrac12$}}, xtick style={draw=none}]
-
-            \addplot graphics [
-                    xmin=0, xmax=1,
-                    ymin=1e-23, ymax=1e-17,
-                ] {plots/tau_t_tau_cb.png};
-        \end{semilogyaxis}
-    \end{tikzpicture}
-    \figtauerrcaption
-    \label{fig:tau-err}
-\end{figure}
+%             xtick={-.5,-.25,0,+.25,+.5},
+%             xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
+%             ytick={0,\suprad/2,\suprad,.5},
+%             yticklabels={$0$,$\tfrac{\sqrt3}{12}$,$\tfrac{\sqrt3}{6}$,$\tfrac12$}
+%             ]
+%             \addplot graphics [
+%                     xmin=0, xmax=.5,
+%                     ymin=.01, ymax=.5,
+%                 ] {\plotdir/tau_t_tau.png};
+%             % Real line to check figure alignment and hide ugly edge
+%             \draw[thick, gray, cap=round] (0,.5) -- (0,0)
+%                 arc[start angle=180, end angle=60, radius=\subrad]
+%                 (.5,.5) -- (.5,\suprad)
+%                 arc[start angle=90, end angle=150, radius=\suprad];
+%             % Arrow mentioned in the legend
+%             \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
+%         \end{axis}
+%     \end{tikzpicture}
+%     \tikzsetnextfilename{fig-tau-err-abs}
+%     \begin{tikzpicture}
+%         \begin{axis}[
+%             width=\plotwidth, height=\plotwidth, scale only axis, axis on top,
+%             xmin=0, xmax=.5,
+%             ymin=0, ymax=.5,
+%             xlabel={$\Re(\tau)$},
+% %             ylabel={$\Im(\tau)$},
+%             xtick={-.5,-.25,0,+.25,+.5},
+%             xticklabels={$-\tfrac12$, $-\tfrac14$,$0$,$\tfrac14$,$\tfrac12$},
+%             ytick={0,\suprad/2,\suprad,.5},
+%             yticklabels={},
+%             ]
+%             \addplot graphics [
+%                     xmin=0, xmax=.5,
+%                     ymin=.018, ymax=.5,
+%                 ] {\plotdir/tau_t_tau_abs.png};
+%             % Real line to check figure alignment and hide ugly edge
+%             \draw[thick, gray, cap=round] (0,.5) -- (0,0)
+%                 arc[start angle=180, end angle=60, radius=\subrad]
+%                 (.5,.5) -- (.5,\suprad)
+%                 arc[start angle=90, end angle=150, radius=\suprad];
+%             % Arrow mentioned in the legend
+%             \draw[gray, -latex] (.112,.115) -- +(-1.5ex,1.5ex);
+%         \end{axis}
+%     \end{tikzpicture}
+%     \tikzsetnextfilename{fig-tau-err-cb}
+%     \begin{tikzpicture}
+%         \begin{semilogyaxis}[
+%             width=.5cm, height=\plotwidth, scale only axis, axis on top,
+%             xmin=0, xmax=1,
+%             ymin=1e-23, ymax=1e-17,
+%             xlabel={\vphantom{$\Re(\tau)$}},
+%             ylabel={$|\delta\tau|$},
+%             yticklabel pos=right,
+%             xtick={.5}, xticklabels={\vphantom{$\tfrac12$}}, xtick style={draw=none}]
+%
+%             \addplot graphics [
+%                     xmin=0, xmax=1,
+%                     ymin=1e-23, ymax=1e-17,
+%                 ] {\plotdir/tau_t_tau_cb.png};
+%         \end{semilogyaxis}
+%     \end{tikzpicture}
+%     \figtauerrcaption
+%     \label{fig:tau-err}
+% \end{figure}
 
 \end{document}

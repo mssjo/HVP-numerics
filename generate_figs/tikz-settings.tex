@@ -1,0 +1,82 @@
+% Settings for drawing the diagrams in TikZ
+
+\newcommand{\tadpoleangle}{130}
+\newlength{\tadpolesize}\setlength{\tadpolesize}{1cm}
+\newlength{\bubblesize}\setlength{\bubblesize}{.33cm}
+\newcommand{\bubbleaspect}{.8}
+\newlength{\photonlength}\setlength{\photonlength}{.8cm}
+\newcommand{\diagramscale}{1.25}
+\newlength{\vertsize}\setlength{\vertsize}{2.25pt}
+\tikzset{
+    Ultra thick/.style={line width=3pt},
+    miter cap/.style={{Triangle Cap[]}-{Triangle Cap[]}},
+    pion/.style = { very thick },
+    photon/.style = { thick, decorate, decoration={snake,segment length=.26\photonlength, amplitude=+.05\photonlength} },
+    notoph/.style = { thick, decorate, decoration={snake,segment length=.26\photonlength, amplitude=-.05\photonlength} },
+    diagrcut/.style={red,decorate,decoration={zigzag,segment length=1mm,amplitude=.25mm}},
+    %
+    bubble2/.style = {xscale=.8, transform shape},
+    elbbub2/.style = {xscale=1.25, transform shape},
+    bubble3/.style = {xscale=.64, transform shape},
+    threeloop/.style = {scale=1.2, transform shape},
+    %
+    NLO/.pic = {
+        \fill (0,0) circle[radius=\vertsize];
+    },
+    NNLO/.pic = {
+        \fill (-\vertsize,-\vertsize) rectangle (\vertsize, \vertsize);
+    },
+    NNNLO/.pic = {
+        \fill (90:2\vertsize) -- (210:2\vertsize) -- (330:2\vertsize) -- cycle;
+    },
+    %
+    pics/tadpole/.style = {
+        code = {
+            \draw[pion] (0,0) .. controls (\tadpoleangle:\tadpolesize) and (180-\tadpoleangle:\tadpolesize) .. (0,0)
+                foreach \i in {#1} { node[pos=.\i] (node\i) {} }
+                ;
+        }
+    },
+    pics/bubble/.style = {
+        code = {
+            \draw[pion] (0,0) ellipse [x radius=\bubblesize, y radius=\bubbleaspect\bubblesize];
+            \foreach \i in {#1} {
+                \coordinate (node\i) at
+                (canvas polar cs:angle=\i, x radius=\bubblesize, y radius=\bubbleaspect\bubblesize) {};
+            }
+        }
+    },
+    pics/bubble/.default = {0}, % For some reason tadpole is fine with empty, but bubble needs default
+    bubblejoint/.pic = {
+        \fill[white] (-\bubblesize,-\bubblesize) rectangle (\bubblesize,\bubblesize);
+        \draw[pion] (-\bubblesize,+\bubbleaspect\bubblesize) .. controls (0,+\bubbleaspect\bubblesize) and (0,-\bubbleaspect\bubblesize) .. (+\bubblesize,-\bubbleaspect\bubblesize);
+        \draw[pion] (+\bubblesize,+\bubbleaspect\bubblesize) .. controls (0,+\bubbleaspect\bubblesize) and (0,-\bubbleaspect\bubblesize) .. (-\bubblesize,-\bubbleaspect\bubblesize);
+    },
+}
+
+\newcounter{diagram}
+\newenvironment{diagram}[1][]{%
+%         \stepcounter{diagram}\arabic{diagram}
+        \begin{tikzpicture}[scale=\diagramscale, transform shape, baseline={(0,0)},#1]%
+        \path[use as bounding box] (-\photonlength,-\bubblesize) rectangle (+\photonlength,+\bubblesize);
+    }{%
+        % Smash vertically, keep horizontal extent
+        \end{tikzpicture}%
+    }
+
+    
+% P. Tol's colorblind-friendly plot colors
+\definecolor{plotI}{HTML}{0077BB}
+\definecolor{plotII}{HTML}{33BBEE}
+\definecolor{plotIII}{HTML}{009988}
+\definecolor{plotIV}{HTML}{EE7733}
+\definecolor{plotV}{HTML}{CC3311}
+\definecolor{plotVI}{HTML}{DDAA33}
+\definecolor{plotVII}{HTML}{AA3377}
+
+% Colors for various kinematic regions
+\colorlet{spacelike}{plotI}
+\colorlet{subthr}{plotIV}
+\colorlet{twopi}{plotIII}
+\colorlet{fourpi}{plotVII}
+\colorlet{shaded}{gray!30}
