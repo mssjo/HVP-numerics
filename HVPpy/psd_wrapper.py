@@ -1,11 +1,15 @@
 import contextlib
 import os
+import logging
 import subprocess
 import sympy as sp
 import pySecDec as psd
 
-from .utilities import CapturedOutput
+from mpmath import mpc
+
+from .utilities import CapturedOutput, print_return
 from .clogging import clogger
+from .integration import QuadError
 
 # The propagator basis
 props_3loop = [
@@ -55,16 +59,14 @@ def decode(key):
 # Evaluating the integral is done using function call syntax.
 class pySecDec:
 
-    def __init__(self, nu, *, dim="4-2*eps", maxeps=0, force=False, verbose=False, TSIL=False, **kwargs):
-        self.verbose = verbose
-        if self.verbose:
-            print(f"Processing {nu=}{' (forced)' if force else ''}", end=' ')
+    def __init__(self, n, *, dim="4-2*eps", maxeps=0, force=False, TSIL=False, **kwargs):
+        nu = nu_master[n]
+        clogger.debug(f"Processing {nu=}{' (forced)' if force else ''}")
 
         # Setup the key used to refer to the integral
         n_loop = get_n_loop(nu)
         self.key = encode(nu, dim, maxeps, name='TSIL' if TSIL else 'I')
-        if verbose:
-            print(f"({n_loop=}, {self.key=})")
+        clogger.debug(f"({n_loop=}, {self.key=})")
 
         # Clear existing directory if forced or if a previous calculation failed
         # if not os.path.exists(self.path()):
@@ -81,15 +83,13 @@ class pySecDec:
         # Generate the integal library
         try:
             massdim = sp.sympify(f'{sum(nu)} - {n_loop}*({dim})/2')
-            if self.verbose:
-                clogger.debug(f"[pySecDec] Massdim = {massdim}")
+            clogger.debug(f"[pySecDec] Massdim = {massdim}")
             if TSIL:
                 prefactor = f"{'-' if sum(nu)%2 else '+'}(4*pi)**({n_loop}*eps) * mp2**({massdim})"
             else:
                 prefactor = f"exp({n_loop}*eps*EulerGamma)*mp2**({massdim})"
 
-            if self.verbose:
-                clogger.debug(f"[pySecDec] Prefactor = {prefactor}")
+            clogger.debug(f"[pySecDec] Prefactor = {prefactor}")
 
             with contextlib.chdir("./secdec/"):
                 integral = psd.loop_package(
@@ -122,24 +122,19 @@ class pySecDec:
             for line in process.stderr.splitlines():
                 clogger.warning(f"[pySecDec] {line}")
             for line in process.stdout.splitlines():
-                if self.verbose:
-                    clogger.info(f"[pySecDec] {line}")
-                else:
-                    clogger.debug(f"[pySecDec] {line}")
+                clogger.debug(f"[pySecDec] {line}")
 
         except FileExistsError as err:
             if force:
                 raise err
-            elif self.verbose:
-                clogger.info(f"[pySecDec] (Integral already exists - skipping)")
+            clogger.debug(f"[pySecDec] (Integral already exists - skipping)")
 
 
     def __enter__(self):
-        if self.verbose:
-            clogger.info(f"[pySecDec] Loading disteval for {self.key}...")
+        clogger.debug(f"[pySecDec] Loading disteval for {self.key}...")
         self.integral = psd.integral_interface.DistevalLibrary(
                             f'{self.path()}/disteval/{self.key}.json',
-                            verbose = self.verbose
+                            verbose = (clogger.level < logging.DEBUG)
                         )
         # self.integral = psd.integral_interface.IntegralLibrary(
         #                     f'{self.key}/{self.key}_pylink.so'
@@ -162,20 +157,18 @@ class pySecDec:
                 parameters = {'t': t, 'mp2': 1},
                 epsrel = epsrel, epsabs = epsabs)
         for line in captured_output.errors:
-            clogger.warning(f"[pySecDec] {line}")
+            clogger.debug(f"[pySecDec] {line}") # psd sends debug to stderr
         for line in captured_output.output:
-            if verbose:
-                clogger.info(f"[pySecDec] {line}")
-            else:
-                clogger.debug(f"[pySecDec] {line}")
+            clogger.debug(f"[pySecDec] {line}")
 
-        if self.verbose:
-            clogger.debug(f"[pySecDec] {self.key}:")
-            clogger.debug(f"    {result}")
+        clogger.debug(f"[pySecDec] {self.key}:")
+        clogger.debug(f"    {result}")
 
         # The return format is a bit awkward.
         # This changes it into an {order: (value, error)} dict
-        return {order: (val,err) for (order,),(val,err) in result["sums"][self.key].items()}
+        #  with (value, error) as a QuadError object
+        # NOTE: overall sign due to convention difference
+        return {order: QuadError(-mpc(val),mpc(err)) for (order,),(val,err) in result["sums"][self.key].items()}
 
     def path(self):
         return f"./secdec/{self.key}/"

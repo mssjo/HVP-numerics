@@ -80,7 +80,7 @@ def dbeta_dtau(beta, tau, method=None, error=True):
 
 # t -> tau for the remainder of this file
 
-# @verify_inverse(tau_to_t, epsabs=10*epsilon, epsrel=100*epsilon)
+# @verify_inverse(tau_to_t, epsabs=10*mp_eps(), epsrel=100*mp_eps())
 def t_to_tau(t, error=False):
     """
     Convert t to tau. This is expensive.
@@ -97,12 +97,12 @@ def t_to_tau(t, error=False):
 
     # # Apply tiny imaginary part if needed
     # if not is_complex(t) or t.imag == 0:
-    #     tsun = t_sun(t + epsilon*1j)
+    #     tsun = t_sun(t + mp_eps()*1j)
 
     # Better: use the theta method for real values
-    if is_real(t, epsabs=tolerance):
+    if is_real(t, epsabs=mp_eps()):
         from .theta import theta_to_tau, t_to_theta
-        return theta_to_tau(t_to_theta(t, tol=tolerance, error=error))
+        return theta_to_tau(t_to_theta(t, tol=mp_eps(), error=error))
 
     tsun = t_sun(t)
     tau = 1j * varpi_c(tsun) / varpi_r(tsun)

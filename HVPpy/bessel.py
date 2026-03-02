@@ -5,7 +5,7 @@ from .utilities import *
 def bessel_real(v,t,x):
     # A variant of the modified Bessel function appearing in E1
     # that is manifestly real for real arguments
-    rt = Re(t)
+    rt = t.real
     if rt < 0:
         arg = x*sqrt(-rt)
         return besselj(v, arg) * (-arg)**v
@@ -15,6 +15,7 @@ def bessel_real(v,t,x):
 
 # @tabulate_return
 def bessel_integrand(n,t,x, d_logt=0):
+
     if x == 0:
         return 0
 
@@ -42,6 +43,8 @@ def bessel_integrand(n,t,x, d_logt=0):
                 return 0
             else:
                 return -x * (i0 + i1 + i2) * besselk(0,x)**4
+
+        # TODO 3rd derivative
 
         case (1,_):
             raise ValueError(f"{ordinal(d_logt)} log(t)-derivative not implemented")

@@ -1,4 +1,4 @@
-from mpmath import log, polylog, inf, pi, zeta
+from mpmath import log, polylog, inf, pi, zeta, mpf
 
 def Jbub(n,beta):
     if beta == inf:
@@ -32,8 +32,8 @@ def Jbub(n,beta):
                     )
         case 3:
             return (-48
-                    + 12*beta*(Li(3,bp)+ Li(2,bp)+(1/12)*log(bp)**3+(1/2)*log(bp)**2+(2-((pi**2)/(12)))*log(bp))
-                    - 12*beta*(Li(3,bm)+ Li(2,bm)+(1/12)*log(bm)**3+(1/2)*log(bm)**2+(2-((pi**2)/(12)))*log(bm))
+                    + 12*beta*(Li(3,bp)+ Li(2,bp)+(1/mpf(12))*log(bp)**3+(1/2)*log(bp)**2+(2-((pi**2)/(12)))*log(bp))
+                    - 12*beta*(Li(3,bm)+ Li(2,bm)+(1/mpf(12))*log(bm)**3+(1/2)*log(bm)**2+(2-((pi**2)/(12)))*log(bm))
                     + 3*beta*log(bp)*log(bm)*(log(bp)-log(bm))
                     )
         case _:

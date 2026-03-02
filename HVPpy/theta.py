@@ -1,8 +1,8 @@
 # The parametrization of the real t line in terms of the tau-friendly variable theta
 
-from mpmath import mpf, mpc
+from mpmath import mpf, mpc, mp
 from mpmath import findroot
-from mpmath import sqrt, log, exp, pi
+from mpmath import sqrt, log, exp, pi, inf
 from scipy.optimize import newton
 
 from .clogging import clogger
@@ -78,7 +78,7 @@ def dbeta_dtheta(beta, theta):
             * (1 + 6*eisen(0,2, q, psi_t))
             * theta_to_tau(theta, deriv=1))
 
-def t_to_theta(t, tol=tolerance, error=True):
+def t_to_theta(t, tol=None, error=True):
     t = Re(QuadError.decay(t))
 
     # By design, t=theta at these points
@@ -108,8 +108,8 @@ def t_to_theta(t, tol=tolerance, error=True):
             theta = findroot(solver='newton',
                 f = lambda z: Re(QuadError.decay(theta_to_t(z) - t)),
                 df= lambda z: Re(QuadError.decay(dt_dtheta(z))),
-                x0=initial,
-                tol=tol, verify=error, verbose=error)
+                x0=initial, maxstep=mp.prec,
+                tol=tol if tol else mp_eps(), verify=error, verbose=error)
 
         if error:
             theta = QuadError(theta, float(captured_output.output[-1][len('error: '):]))
@@ -117,9 +117,12 @@ def t_to_theta(t, tol=tolerance, error=True):
         else:
             clogger.debug(f"theta({t}) = {theta}")
 
+    if error and theta.value() and abs(theta.error() / theta.value()) > 1e-3:
+        clogger.warning(f"Lagre relative error in theta: {theta}")
+
     return theta
 
-def beta_to_theta(beta, tol=tolerance, verify=True):
+def beta_to_theta(beta, tol=None, verify=True):
     return t_to_theta(beta_to_t(beta), tol, verify)
 
 # Theta version of hybrid_integral
@@ -130,14 +133,34 @@ def theta_integral(integrand, series, limit_beta, xover_beta,
     if "hybrid_error_log" in kwargs:
         t0 = time.time_ns()
 
-    limit_theta = QuadError.decay(beta_to_theta(limit_beta))
-    xover_theta = QuadError.decay(beta_to_theta(xover_beta))
-    xover_tau = theta_to_tau(xover_theta)
+    limit_theta, limit_err = QuadError.val_err(beta_to_theta(limit_beta))
 
-    tail          = evaluate_series(series, var=xover_beta, deriv=-1, error=-1)
-    tail_at_xover = evaluate_series(series, var=xover_beta, deriv= 0, error= 0)
+    # Adaptive crossover
+    adaptive_xover = kwargs.get("adaptive_xover", False)
+    if adaptive_xover:
+        xover_theta = limit_theta
+        xover_scale = 1/(1 + kwargs.get("xover_step", .1))
+        while True:
+            xover_tau = theta_to_tau(xover_theta)
+            xover_beta = tau_to_beta(xover_tau)
+            if abs(xover_beta) > kwargs.get("max_xover", inf):
+                break
+            head_at_xover = integrand(tau_to_beta(xover_tau), xover_tau)
+            tail_at_xover = evaluate_series(series, var=xover_beta, error= -1)
+            tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
+            if xover_theta != limit_theta and tail_relerr > prev:
+                xover_theta /= xover_scale
+                xover_tau = theta_to_tau(xover_theta)
+                xover_beta = tau_to_beta(xover_tau)
+                break
+            xover_theta *= xover_scale
+            prev = tail_relerr
+        xover_err = 0
+    else:
+        xover_theta, xover_err = QuadError.val_err(beta_to_theta(xover_beta))
+        xover_tau = theta_to_tau(xover_theta)
+
     head_at_xover = integrand(xover_beta, xover_tau)
-
     real_integrand = is_real(head_at_xover * dbeta_dtheta(xover_beta, xover_theta))
 
     def full_integrand(theta):
@@ -146,34 +169,53 @@ def theta_integral(integrand, series, limit_beta, xover_beta,
         result = QuadError.decay(integrand(beta, tau) * dbeta_dtheta(beta, theta))
         return Re(result, strict=True) if real_integrand else Im(result, strict=True)
 
+    head = None
     if limit_theta < xover_theta < 0:
         limits = [(limit_theta, xover_theta)]
         sign = -1
     elif 0 < xover_theta < limit_theta < 4:
         limits = [(xover_theta, limit_theta)]
         sign = +1
+    elif xover_theta == limit_theta:
+        head = QuadError(0)
     else:
         raise ValueError(f"Invalid theta range: [{limit_theta}, {xover_theta}]")
 
+    clogger.debug(f"Hybrid theta integral ({'adaptive ' if adaptive_xover else ''}xover at θ={xover_theta}, β={xover_beta}):")
+
     if not real_integrand:
         sign *= 1j
+    if head is None:
+        head = sign*QuadError.from_quad(full_integrand, limits, **kwargs)
 
-    head = sign*QuadError.from_quad(full_integrand, limits, **kwargs)
+    if xover_beta != inf:
+        tail          = evaluate_series(series, var=xover_beta, deriv=-1, error=-1)
+        tail_at_xover = evaluate_series(series, var=xover_beta, deriv= 0, error=-1)
+        tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
+    else:
+        tail = QuadError(0)
+        tail_at_xover = 0
+        tail_relerr = 0
 
-    clogger.debug(f"Hybrid  theta integral:")
     clogger.debug(f" > limit theta:   {limit_theta}")
     clogger.debug(f" > xover theta:   {xover_theta}")
     clogger.debug(f" > head at xover: {head_at_xover}")
+    limit_err *= full_integrand(limit_theta)
+    clogger.debug(f" > > limit error: {limit_err}")
+    xover_err *= full_integrand(xover_theta)
+    clogger.debug(f" > > xover error: {xover_err}")
     clogger.debug(f" > tail at xover: {tail_at_xover}")
-
-    tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
     clogger.debug(f" > >  rel. error: {tail_relerr}")
     if tail_relerr > 1e-1:
         clogger.warning(f"Large tail relative error: {tail_relerr}")
-    tail = QuadError(tail.value(), abs(tail.value()*tail_relerr))
 
     clogger.debug(f" > head-integral: {head}")
+    head.add_error(limit_err)
+    head.add_error(xover_err)
+    clogger.debug(f" > > (+ lim.err): {head}")
     clogger.debug(f" > tail-integral: {tail}")
+    tail.add_error(tail.value()*tail_relerr)
+    clogger.debug(f" > > (+ rel.err): {tail}")
 
     result = head+tail
 

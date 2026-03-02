@@ -9,16 +9,19 @@ from io import StringIO
 
 from collections.abc import Sequence, Mapping, Set
 from inspect import signature
-from mpmath import mpc
+from mpmath import mp, mpf, mpc
 
 from .clogging import clogger
-
-epsilon = 1e-12
-tolerance = epsilon
 
 # So that these can be used in f-strings
 NL = '\n'
 TAB = '\t'
+
+def mp_eps(margin=None):
+    if margin is None:
+        return 10**(-int(.9*mp.dps))
+    else:
+        return 10**(margin-mp.dps)
 
 class CapturedOutput:
     def __init__(self, allow_stderr=False):
@@ -87,26 +90,28 @@ def add_QuadError(func):
             return QuadError(result, 0)
     return wrapper
 
-
 # Function decorator to cancel evaluation after a timeout
 # If interrupted by the timeout or manually, the return value is default
 def timeout(seconds, default=None):
+    import signal
+
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            def interrupt():
-                # print to stderr, unbuffered in Python 2.
-                clogger.info(f"Function {func.__name__} interrupted after {seconds} seconds")
+            def handler(signum, frame):
+                # This is deliberately to be conflated with manual interrupt
                 raise KeyboardInterrupt
 
-            timer = threading.Timer(seconds, interrupt)
-            timer.start()
+            signal.signal(signal.SIGALRM, handler)
+            signal.alarm(seconds)
             try:
                 result = func(*args, **kwargs)
             except KeyboardInterrupt:
+                clogger.warning(f"Function {func.__name__} interrupted after {seconds} seconds - returning {default}")
+                time.sleep(2) # Allow another CTRL+C press to actually interrupt the program
                 return default
             finally:
-                timer.cancel()
+                signal.alarm(0)
             return result
         return wrapper
     return decorator
@@ -251,3 +256,20 @@ def ordinal(n):
         case _:
             return f"{n}th"
 
+
+# Helper methods for making QuadError(mpc,mpc) json-friendly
+def map_nested(obj, func):
+    if isinstance(obj, dict):
+        return {key: map_nested(val, func) for key, val in obj.items()}
+    else:
+        return func(obj)
+def json_to_QE(obj):
+    from .integration import QuadError
+    from mpmath import mpf, mpc
+    ((rv, iv), (re, ie)) = obj
+    return QuadError(mpc(mpf(rv),mpf(iv)), mpc(mpf(re),mpf(ie)))
+def QE_to_json(obj):
+    from .integration import QuadError
+    val,err = QuadError.val_err(obj)
+    mpc_to_json = lambda obj: [str(obj.real), str(obj.imag)] if is_complex(obj) else [str(obj), "0"]
+    return [mpc_to_json(val), mpc_to_json(err)]

@@ -6,7 +6,7 @@ This file implements the elliptic polylogs, Eisenstein series, etc.
 """
 
 from math import lcm
-from mpmath import mpf, mpc
+from mpmath import mpf, mpc, mp
 from mpmath import pi, inf
 from mpmath import exp, eta, zeta
 
@@ -94,8 +94,11 @@ def tau_to_t(tau, method=None, error=True):
 # in particular with the mpmath eta (sage's is better).
 # For abs(tau) below this cutoff, use the asymptotic expansion instead
 # In sage, the difference between eta and asymptotic is less than the
-# numerical noise for abs(tau) < 0.03 or so
-varpi_1_cutoff = 0.01
+# numerical noise for abs(tau) < 0.03 or so, depending on numerical precision
+varpi_1_cutoff = 1 / (10*mp.prec)
+
+from .utilities import add_QuadError
+@add_QuadError
 def varpi_1(tau, method=None):
 
     if method == Method.EISENSTEIN:
@@ -105,7 +108,7 @@ def varpi_1(tau, method=None):
         logw = logq + 2*eisen(1,1, q, psi_varpi)
         return QuadError.exp(logw)
 
-    elif abs(tau) > varpi_1_cutoff:
-        return complex((eta(2*tau)*eta(6*tau))**4 / (eta(tau)*eta(3*tau))**2)
+    elif True or abs(tau) > varpi_1_cutoff: # Disable the cutoff; this seems to have stabilized
+        return mpc((eta(2*tau)*eta(6*tau))**4 / (eta(tau)*eta(3*tau))**2)
     else:
         return -1/(48*tau**2)
