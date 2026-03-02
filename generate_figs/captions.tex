@@ -2,12 +2,20 @@
 % However, this means that the same caption would have to be maintained both there and where the figure is included in the main text.
 % The solution is to break them out into this file.
 
+\newlength{\inlinetikzheight}
+\newcommand{\inlinetikz}[2]{{%
+    \setbox0=\hbox{#1}\tikzset{external/export next=false}%
+    \setlength{\inlinetikzheight}{\dimexpr\ht0+\dp0\relax}%
+    \tikz[baseline=\dp0]{#2}%
+    }}
+
 \newcommand{\figellipticcaption}{%
-    \caption{The integrals $E_1$, $E_2$ and $E_3$ (left to right), shown as functions of the nome $q$ over the unit disk in the complex plane.
-    For each function, its value at $t=0$ (limit as $q\to1$) has been subtracted to make the features more visible.
-    The hue represents the complex argument (with \textbf{\color{red}red} and \textbf{\color{cyan}cyan} for positive and negative real values, respectively), while the shaded contours represent the magnitude logarithmically: with each successive contour, $|t|$ gets a factor of $2$ larger (brighter side) or smaller (darker side).
-    Each $t\neq 0$ corresponds to infinitely many $q$ via \cref{eq:q-to-t}, but the wedge-shaped region outlined in white corresponds to a single copy of the complex $t$-plane, with $t=0$ at its rightmost extremity; this is explored further in \cref{sec:t-tau-q}.
-    Note the branch cut on $q\in[0,1]$, which corresponds to two copies of $t\in[16,\infty)$ (see \cref{fig:q}).
+    \caption[]{The integrals $E_1$, $E_2$ and $E_3$ (left to right), shown as functions of the nome $q$ over the complex unit disk.
+    This disk corresponds to a fractal tiling of infinitely many copies of the complex $t$-plane (see \cref{fig:q}), and we outline one such copy in white here.
+    For each integral, its value at $t=0$ (limit as $q\to1$) has been subtracted to make the features more visible.
+    The integral values are shown using domain coloring: the hue represents their phase (with \textbf{\color{red}red} and \textbf{\color{cyan}cyan} for positive and negative real values, respectively), while the contours represent their absolute value: it is a power of $2$ on the contours, and decreases toward the shaded side.
+    As a reference for reading the contours, the top corner of the white outline (corresponding to $t=4$) has \mbox{$0.5 < |E_1(2;4)-E_1(2;0)| < 1$}, \mbox{$0.25<|E_2(2;4)-E_2(2;0)|<0.5$}, and \mbox{$0.125<|E_3(2;4)-E_3(2;0)|< 0.25$}.
+    Note the branch cut on $q\in[-1,0]$, which corresponds to two copies of $t\in[16,\infty)$ (see \cref{fig:q}).
     }}
 
 
@@ -91,7 +99,8 @@
         The shaded area indicates the ``too close to the cut'' zone described in the definition of $\mathcal C_\xi(\beta)$.
         For integrals using \cref{eq:hybrid-integral}, the parts from below ($<$) and above ($>$) the cutoff $\chi$ are indicated.
         % All numbers are truncated; see \cref{tab:numeric-example} for the full numbers.
-        All numbers are much more precise than shown here, with the largest errors [those of $\IE{n}(\beta_\star)$] being on the order of $10^{-6}$.
+        All numbers are much more precise than shown here.
+        % , with the largest errors [those of $\IE{n}(\beta_\star)$] being on the order of $10^{-6}$.
         % Note the presence of large cancellations, with several intermediate quantities being several orders of magnitude larger than the end result; this is even more striking when $t\in[0,4)$, where the large imaginary parts of the contours cancel to give a real result.
         % (Of course, if the equivalent method described at the end of \cref{sec:spacelike} is used, everything is manifestly real).
         }}
@@ -122,29 +131,88 @@
 
 \newcommand{\figmasterscaption}{%
     \caption[The six elliptic master integrals plotted as functions of $t$.]{
-        The six elliptic master integrals plotted as functions of $t$, showing the real (\Resample) and imaginary (\Imsample) parts, as well as the fifth-order series expansion around $t=0$ (\seriessample).
+        The six elliptic master integrals plotted as functions of $t$, showing the real
+        (\inlinetikz{X}{
+            \draw[real] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
+        and imaginary
+        (\inlinetikz{X}{
+            \draw[imag] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
+        parts.
+        The lines represent our implementation, \texttt{pySecDec} and \texttt{FeynTrop}, which (excepting cases where \texttt{FeynTrop} fails to converge) are indistinguishable at the scale of the plot.
+        The isolated points () are obtained using \texttt{AMFlow}, and the dashed lines
+        (\inlinetikz{X}{
+            \draw[real, series dash] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
+        indicate the 8th-order series expansion around $t=0$ (we use a relatively low-order expansion here for legibility).
 %         The two- and four-pion thresholds are drawn as vertical dotted lines.
 %         Below each plot is shown the relative difference between \texttt{pySecDec} (lines with error bands) and our implementation, whose error is not visible at the scale of the plots.
 %         Also shown is the relative difference between our implementation and the series expansion.
 %         Reinterpreting the below-threshold imaginary part as errors (like in \cref{fig:abserr}) gives error bands much taller than the plots.
-        At the scale of the plots, the difference between our implementation and \texttt{pySecDec} is not visible (but see \cref{fig:reldiff}), nor are the error bands.
-        However, the absolute uncertainty of each line is shown on a logarithmic scale below each plot, using \texttt{pySecDec}'s uncertainty; the uncertainty using our method is shown as a shaded area.
-        For the series expansion, the truncation error is estimated as the magnitude of the last non-truncated term.
+        The error bands too narrow to be visible---see \cref{fig:E1,fig:reldiff}---but the absolute uncertainty of each line is shown on a logarithmic scale below each plot, using the Eisenstein variant of our implementation, as well as the truncation error of the series expansion.
+        The error band of \texttt{pySecDec}, which is essentially the same for the real and imaginary parts, is shown in gray, and where applicable, that of \texttt{FeynTrop} is shown in lighter gray.
+        \texttt{AMFlow} was run with a precision goal of $10^{-12}$; it provides no estimate of the actual error achieved.
         }}
+
+\newcommand{\figEfourcaption}{%
+    \caption{A dissection of $\bar E_4(4;t)$ as formed through \cref{eq:E4-finite}, showing the contributions from $E_i(2;t)$ (each multiplied by their respective polynomial in $t$) and the sum of those contributions (black), compared to the total $\bar E_4$ (gray) which also includes non-elliptic terms.
+    The total contribution from the elliptic integrals to the imaginary part (black, dashed) appears zero, but as shown in the magnification on the right, it does in fact increase very slowly, corresponding to a gradually opening four-particle cut.
+    }}
+
+\newcommand{\figEonecaption}{%
+    \caption[Symmetric log plot of the relative difference between our different implementations of $E_1(2;t)$]{
+        The difference between our different implementations of $E_1(2;t)$ described in \cref{sec:E123}, as well as the 32nd-order series expansion,
+        with error bands shown.
+        To visualize the small differences, we use a symmetric log axis and display the relative difference between each quantity $y$ and some reference value $Y$.
+        When $Y=0$ is known to be the true value
+        (that is, in the region shaded as
+        \inlinetikz{Xg}{
+            \draw[gray, pattern=north east lines, pattern color=gray] (0,0) rectangle (\inlinetikzheight,\inlinetikzheight);}),
+        we simply display $y$.
+        Otherwise, we take $Y$ from the Eisenstein implementation and display the relative difference $\frac{y-Y}{Y}$.
+        (That the Eisenstein line nevertheless deviates from zero in the non-shaded region is a rounding artefact.)
+        In the bottom panel, we show the computer time needed to obtain each data point in the other two panels.}}
 
 \newcommand{\figreldiffcaption}{%
     \caption[Symmetric log plots of the relative difference between the three different implementations of the master integrals]{
-        Symmetric log plots of the relative difference between our results and those of \texttt{pySecDec} and the series expansion, shown similarly to \cref{fig:masters}.
-        By relative difference, we mean $[x - x_\text{ref}]/x_\text{ref}$ where $x$ is some quantity and $x_\text{ref}$ is the same quantity as computed using our method.
-        Below threshold, the imaginary part is known to be zero and the relative difference makes little sense, so in the parts of the plots that are shaded ({\setbox0=\hbox{Xg}\tikzset{external/export next=false}\tikz[baseline=\dp0]{\draw[gray, pattern=north east lines, pattern color=gray] (0,0) rectangle (\dimexpr\ht0+\dp0\relax,\dimexpr\ht0+\dp0\relax);}}) we display the actual quantities $x$ rather than the relative difference.
-        Our values (whose relative difference is zero by construction) and their error bands are shown in gray.
+        Symmetric log plots of the relative difference (as in \cref{fig:E1}) between our results and the benchmark methods, for all master integrals.
+        The lines represent the Eisenstein variant of our method
+        (\inlinetikz{X}{
+            \draw[eisen] (.0cm,.5\inlinetikzheight) -- +(\legendwidth,0);
+            \fill[eisen, errorband] (0,0) rectangle +(\legendwidth,\inlinetikzheight);
+            }, taken as reference),
+        \texttt{pySecDec}
+        (\inlinetikz{X}{
+            \draw[secdec] (.0cm,.5\inlinetikzheight) -- +(\legendwidth,0);
+            \fill[secdec, errorband] (.0cm,0) rectangle +(\legendwidth,\inlinetikzheight);
+            }),
+        \texttt{FeynTrop}
+        (\inlinetikz{X}{
+            \draw[feyntrop] (.0cm,.5\inlinetikzheight) -- +(\legendwidth,0);
+            \fill[feyntrop, errorband] (.0cm,0) rectangle +(\legendwidth,\inlinetikzheight);
+            },
+            only where applicable),
+        \texttt{AMFlow}
+        (\inlinetikz{X,}{
+            \draw[gray, |-|] (.0\legendwidth, .5\inlinetikzheight) -- +(.5\legendwidth,0);
+            \draw[gray,  -|] (.5\legendwidth, .5\inlinetikzheight) -- +(.5\legendwidth,0);
+            }, not always visible),
+        and the 32nd-order series expansion
+        (\inlinetikz{X}{
+            \draw[series] (.0cm,.5\inlinetikzheight) -- +(\legendwidth,0);
+            \fill[series, errorband] (.0cm,0) rectangle +(\legendwidth,\inlinetikzheight);
+            }).
+        Recall that in the shaded region
+        (\inlinetikz{Xg}{
+            \draw[gray, pattern=north east lines, pattern color=gray] (0,0) rectangle (\inlinetikzheight,\inlinetikzheight);}),
+        the values are shown directly rather than as relative differences.
         }}
+
+
 
 \newcommand{\figtimecaption}{%
     \caption[Time consumption, measured in seconds per master integral evaluation, needed by the different evaluation methods for different $t$.]{
-        Time, measured in seconds per sample, needed to obtain the data behind \cref{fig:masters,fig:reldiff}.
-        Solid lines indicate our implementation, and dashed lines indicate \texttt{pySecDec}; colors represent different masters as per the plot legend.
-        Note that our implementation is single-threaded, whereas \texttt{pySecDec} made full use of the 16-core processor on which this data was collected.
+        Time needed to obtain the data points behind \cref{fig:masters,fig:reldiff}, using the various implementations presented there.
+        The series expansion is not show, but consistently takes about 0.4 ms as in \cref{fig:E1}.
+        \texttt{AMFlow} computes all $E_i(2;t)$ [or $\bar E_i(4;t)$] as one unit, and what is shown for $E_1(2;t)$ [or $\bar E_4(4;t)$] is a third of the time consumption of that.
         }}
 
 \newcommand{\figPiEcaption}{%
@@ -176,3 +244,6 @@
         Note also the conspicuous row of four zeroes (dark spots in the right panel).
         These lie along the curve $|t_\sunset-9|=\sqrt{72}$, on which \cref{eq:t-to-tau} reduces to $i\varpi_c(t_\sunset)/\varpi_r(t_\sunset^*)$; evidently, this allows the errors to more or less cancel.}}
 
+\newcommand{\figerrorscaption}{%
+    \caption[]{
+        The distribution of the error budget of $E_5$ between different parts of the computation, following \cref{eq:E5-subthr,eq:Ebar-schematic}: $\I_X$ stands for $G_2\I_X^{(1)} - G_2\I_X^{(2)}$.}}

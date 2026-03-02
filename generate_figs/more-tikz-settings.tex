@@ -1,5 +1,7 @@
 % Additional tikz settings new to the numerics paper
 
+\usepackage{etoolbox}
+
 % These are from the bounds paper - colorblind friendly!
 \definecolor{plotI}{HTML}{0077BB}
 \definecolor{plotII}{HTML}{33BBEE}
@@ -8,6 +10,41 @@
 \definecolor{plotV}{HTML}{CC3311}
 \definecolor{plotVI}{HTML}{DDAA33}
 \definecolor{plotVII}{HTML}{AA3377}
+
+% These are from the Kdf papers - look good on a 22pt legend
+\tikzset{
+    dash0/.style={solid},
+    dash1/.style={dash pattern=on 8pt off 2pt on 2pt off 2pt},
+    dash2/.style={dash pattern=on 6pt off 2pt on 2pt off 2pt on 2pt off 2pt},
+    dashA/.style={dash pattern=on 4.4pt off 4.4pt},
+    dashB/.style={dash pattern=on 2pt off 2pt},
+    dashC/.style={dash pattern=on 1.2pt off 1pt},
+    dash3/.style={dash pattern=on 5.5pt off 1.5pt on 1.5pt off 1.5pt on 1.5pt off 1.5pt on 1.5pt off 1.5pt},
+    dash4/.style={dash pattern=on 5.2pt off 1.2pt on 1.2pt off 1.2pt on 1.2pt off 1.2pt on 1.2pt off 1.2pt on 1.2pt off 1.2pt},
+    dash5/.style={dash pattern=on 5.2pt off 0.9pt on 0.9pt off 0.9pt on 0.9pt off 0.9pt on 0.9pt off 0.9pt on 0.9pt off 0.9pt},
+    %
+    line0/.style={plotI,   dash0},
+    line1/.style={plotII,  dash1},
+    line2/.style={plotIII, dash2},
+    lineA/.style={plotIV,  dashA},
+    lineB/.style={plotV,   dashB},
+    line3/.style={plotVI,  dash3},
+    line4/.style={plotVII, dash4},
+    line5/.style={plotVII, dash5},
+    %
+    real/.style={line0, thick},
+    imag/.style={lineA, thick},
+    %
+    bessel/.style={dashA, plotVII, thick},
+    polylog/.style={dash2, plotVI, thick},
+    eisen/.style={dash0, plotIII, thick},
+    poisson/.style={dash1, plotIV, thick},
+    series dash/.style={dashC, thick},
+    series/.style={series dash, plotV},
+    secdec/.style={dashB, plotI, thick, join=round},
+    feyntrop/.style={dash4, plotII, thick},
+    amflow/.style={solid, thick, mark=+, draw=none, /pgfplots/error bars/y dir=both, /pgfplots/error bars/y explicit},
+    }
 
 \colorlet{E1}{plotI}
 \colorlet{E2}{plotIII}
@@ -69,17 +106,20 @@
 
 \tikzset{
     threshold/.style={dash pattern=on 0pt off 2pt, cap=round, line width=1.5pt, opacity=.6},
-    imdash/.style={dash pattern=on 3pt off 2.5pt},
-    seriesdotted/.style={dash pattern=on 1pt off 1pt},
-    real/.style={plotI, very thick, solid},
-    imag/.style={plotIV, very thick, imdash},
-    series/.style={real, thick, seriesdotted},
-    secdec/.style={real, thick, dash pattern=on 3pt off 1pt},
-    ours/.style={real, thick, solid},
-    errorband/.style={opacity=.5},
+%     imdash/.style={dash pattern=on 3pt off 2.5pt},
+%     series dotted/.style={dash pattern=on 1pt off 1pt},
+    real/.style={plotI, very thick, dash0},
+    imag/.style={plotIV, very thick, dashA},
+%     series/.style={real, thick, series dotted},
+    ours/.style={real, very thick, solid},
+%     secdec/.style={real, thick, dash pattern=on 3pt off 1pt},
+%     feyntrop/.style={real, thick, dash pattern=on 1pt off 2pt},
+    errorband/.style={solid, draw=none, opacity=.35},
+    faint errorband/.style={opacity=.35},
+    dark errorband/.style={opacity=.6},
     total/.style={line width=2pt, black}}
 
-\newlength{\legendwidth}\setlength{\legendwidth}{19.5pt}
+\newlength{\legendwidth}\setlength{\legendwidth}{22pt}
 \pgfplotsset{
     complex legend/.style={legend image code/.code={
         \draw [real, #1] (0pt,.5ex) -- (\legendwidth,.5ex);
@@ -91,10 +131,29 @@
 %         \draw [#1, imag] (0pt,0ex) -- (\legendwidth,0ex);
 %         }},
     }
+\pgfplotsset{
+    legend with error/.style={legend image code/.code={
+        \fill [#1, solid, errorband] (0pt,+.7ex) rectangle (\legendwidth,-.3ex);
+        \draw [#1]            (0pt,+.2ex) -- (\legendwidth,+.2ex);
+        }},
+    legend with different error/.style 2 args={legend image code/.code={
+        \fill [#2, errorband] (0pt,+.7ex) rectangle (\legendwidth,-.3ex);
+        \draw [#1]            (0pt,+.2ex) -- (\legendwidth,+.2ex);
+        }},
+    double legend/.style={legend image code/.code={
+        \draw [ours,     #1] (0pt,+.7ex) -- (\legendwidth,+.7ex);
+        \draw [secdec,   #1] (0pt,+.1ex) -- (\legendwidth,+.1ex);
+        }},
+    triple legend/.style={legend image code/.code={
+        \draw [ours,     #1] (0pt,+.7ex) -- (\legendwidth,+.7ex);
+        \draw [secdec,   #1] (0pt,+.1ex) -- (\legendwidth,+.1ex);
+        \draw [feyntrop, #1] (0pt,-.5ex) -- (\legendwidth,-.5ex);
+        }},
+    }
 
 \newcommand{\plotE}[5]{%
     \begin{tikzpicture}
-        \def\Eplotfile{\plotdir/E#1.dat}
+        \def\Eplotfile{\plotdir/prec64/E#1}
         \def\Eplotlabel{#2}
         \def\Eplotymin{#3}
         \def\Eplotymax{#4}
@@ -107,13 +166,19 @@
                 minor xtick={-9,-8,...,23},
                 xticklabels={},
                 ymin=\Eplotymin, ymax=\Eplotymax,
+                unbounded coords=jump
                 ]
             \drawzerolines{\Eplotxmin}{\Eplotxmax}{\Eplotymin}{\Eplotymax}
 
-            \addplot[real]   table[x=t, y=eRe, col sep=tab] {\Eplotfile};
-            \addplot[imag]   table[x=t, y=eIm, col sep=tab, restrict x to domain=\Eplotthreshold:\Eplotxmax] {\Eplotfile};
+            \addplot[real]   table[x=t, y=Re, col sep=tab, restrict y to domain=\Eplotymin:\Eplotymax] {\Eplotfile e.dat};
+            \addplot[imag]   table[x=t, y=Im, col sep=tab, restrict x to domain=\Eplotthreshold:\Eplotxmax, restrict y to domain=\Eplotymin:\Eplotymax] {\Eplotfile e.dat};
 
-            \addplot[series] table[x=t, y=0Re, col sep=tab] {\Eplotfile};
+%             \addplot[series] table[x=t, y=Re, col sep=tab, restrict y to domain=\Eplotymin:\Eplotymax] {\Eplotfile 0.dat};
+            \addplot[real, series dash] table[x=t, y=Re, col sep=tab, restrict y to domain=\Eplotymin:\Eplotymax] {\Eplotfile 08.dat};
+%             \addplot[series] table[x=t, y=Re, col sep=tab, restrict y to domain=\Eplotymin:\Eplotymax] {\Eplotfile 016.dat};
+
+            \addplot[amflow, real] table[x=t, y=Re, y error plus expr=abs(\thisrow{MaxRe}-\thisrow{Re}), y error minus expr=abs(\thisrow{MinRe}-\thisrow{Re})] {\Eplotfile a.dat};
+            \addplot[amflow, imag, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=Im, y error plus expr=abs(\thisrow{MaxIm}-\thisrow{Im}), y error minus expr=abs(\thisrow{MinIm}-\thisrow{Im})] {\Eplotfile a.dat};
 
         \end{axis}
 
@@ -126,27 +191,248 @@
                 minor xtick={-9,-8,...,23},
                 xlabel={\xlabel},
                 ymin=\Eplotlogymin, ymax=\Eplotlogymax,
-                ytick={1e-3,1e-6,1e-9,1e-12},
-                minor ytick={1e-1,1e-2,1e-4,1e-5,1e-7,1e-8,1e-10,1e-11,1e-13,1e-14},
-                ymajorgrids=true
+                ytick={1e-3,1e-6,1e-9,1e-12,1e-15},
+                minor ytick={1e-1,1e-2,1e-4,1e-5,1e-7,1e-8,1e-10,1e-11,1e-13,1e-14,1e-16,1e-17},
+                ymajorgrids=true,
+                unbounded coords=jump
                 ]
 
-            \addplot[series] table[x=t, y=0AbsRe, col sep=tab] {\Eplotfile};
             \addplot[draw=none, name path=zero, domain=\Eplotxmin:\Eplotxmax, samples=2] {\Eplotlogymin};
-            \addplot[real]                        table[x=t, y=sAbsRe, col sep=tab] {\Eplotfile};
-            \addplot[draw=none, name path=real]   table[x=t, y=eAbsRe, col sep=tab] {\Eplotfile};
-            \addplot[real, errorband] fill between[of=zero and real];
-            \addplot[imag]                        table[x=t, y=sAbsIm, col sep=tab] {\Eplotfile};
-            \addplot[draw=none, name path=imag]   table[x=t, y=eAbsIm, col sep=tab] {\Eplotfile};
-            \addplot[imag, errorband] fill between[of=zero and imag];
+            \addplot[draw=none, name path=psd] table[x=t, y=AbsRe, col sep=tab] {\Eplotfile s.dat};
+            \ifnumless{#1}{5}{%
+                \addplot[gray, errorband] fill between[of=zero and psd];
+
+                \addplot[draw=none, name path=ft] table[x=t, y=AbsRe, col sep=tab] {\Eplotfile f.dat};
+                \addplot[gray, faint errorband] fill between[of=zero and ft];%
+                }{%
+                \addplot[gray, dark errorband] fill between[of=zero and psd];
+                }
+            \addplot[real]   table[x=t, y=AbsRe, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag]   table[x=t, y=AbsIm, col sep=tab] {\Eplotfile e.dat};
+%             \addplot[series] table[x=t, y=AbsRe, col sep=tab] {\Eplotfile 0.dat};
+            \addplot[real, series dash] table[x=t, y=AbsRe, col sep=tab] {\Eplotfile 08.dat};
+%             \addplot[series] table[x=t, y=AbsRe, col sep=tab] {\Eplotfile 016.dat};
+
 
         \end{semilogyaxis}
         \useasboundingbox (0,-\doublenormEplotheight) + (0,-\Eplotsep) + (0,-.5cm);  % Force larger bounding box
     \end{tikzpicture}}
 
+
+\newcommand{\plotEsymlog}[3]{%
+    \begin{tikzpicture}
+        \def\Eplotfile{\plotdir/prec64/E#1}
+        \def\Eplotlabel{#2}
+        \def\Eplotthreshold{#3}
+        \def\symlog{_symlog-15-1}
+        \input{\plotdir/prec64/E#1e\symlog.tex}
+        \begin{axis}[
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={},
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Re\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={,$-10^{-6}$,,$-10^{-12}$,,$0$,,$+10^{-12}$,,$+10^{-6}$,},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true
+            ]
+            \addplot[gray, amflow] table[x=t, y=NormRe, y error plus expr=abs(\thisrow{NormMaxRe}-\thisrow{NormRe}), y error minus expr=abs(\thisrow{NormMinRe}-\thisrow{NormRe})] {\Eplotfile a\symlog.dat};
+
+            \addplot[eisen] table[x=t, y=NormRe] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile e\symlog.dat};
+            \addplot[eisen, errorband] fill between[of=lower and upper];
+
+            \addplot[secdec] table[x=t, y=NormRe] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile s\symlog.dat};
+            \addplot[secdec, errorband] fill between[of=lower and upper];
+            \ifnumless{#1}{5}{%
+                \begin{scope}[/pgfplots/restrict x to domain=\Eplotxmin:\Eplotthreshold]
+                    \addplot[feyntrop] table[x=t, y=NormRe] {\Eplotfile f\symlog.dat};
+                    \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile f\symlog.dat};
+                    \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile f\symlog.dat};
+                    \addplot[feyntrop, errorband] fill between[of=lower and upper];%
+                \end{scope}
+                }{}
+
+            \addplot[series, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=NormRe] {\Eplotfile 0\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=NormMaxRe] {\Eplotfile 0\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=NormMinRe] {\Eplotfile 0\symlog.dat};
+            \addplot[series, errorband] fill between[of=lower and upper];
+
+        \end{axis}
+
+        \begin{axis}[
+            shift={(0,-(\symlogEplotheight + \Eplotsep))},
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={\xlabel},
+            xtick={0,4,16}, xmajorgrids=true,
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Im\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={,$-10^{-6}$,,$-10^{-12}$,,$0$,,$+10^{-12}$,,$+10^{-6}$,},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true,
+            axis background/.style={%
+                preaction={
+                    path picture={
+                        \path[pattern=north east lines, pattern color=gray!50] (axis cs:\Eplotxmin,\symlogymax) rectangle (axis cs:\Eplotthreshold,\symlogymin);
+                    }}}
+            ]
+            \addplot[gray, amflow, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im, y error plus expr=abs(\thisrow{MaxIm}-\thisrow{Im}), y error minus expr=abs(\thisrow{MinIm}-\thisrow{Im})] {\Eplotfile a\symlog.dat};
+            \addplot[gray, amflow, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormIm, y error plus expr=abs(\thisrow{NormMaxIm}-\thisrow{NormIm}), y error minus expr=abs(\thisrow{NormMinIm}-\thisrow{NormIm})] {\Eplotfile a\symlog.dat};
+
+            \addplot[eisen, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MaxIm] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MinIm] {\Eplotfile e\symlog.dat};
+            \addplot[eisen, errorband] fill between[of=lower and upper];
+
+            \addplot[secdec, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MaxIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MinIm] {\Eplotfile s\symlog.dat};
+            \addplot[secdec, errorband] fill between[of=lower and upper];
+            \ifnumless{#1}{5}{%
+                \addplot[feyntrop, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormRe] {\Eplotfile f\symlog.dat};
+                \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormMaxRe] {\Eplotfile f\symlog.dat};
+                \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormMinRe] {\Eplotfile f\symlog.dat};
+                \addplot[feyntrop, faint errorband] fill between[of=lower and upper];%
+                }{}
+
+            \addplot[eisen, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormIm] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMaxIm] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMinIm] {\Eplotfile e\symlog.dat};
+            \addplot[eisen, errorband] fill between[of=lower and upper];
+
+            \addplot[secdec, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMaxIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMinIm] {\Eplotfile s\symlog.dat};
+            \addplot[secdec, dark errorband] fill between[of=lower and upper];
+
+
+        \end{axis}
+        \useasboundingbox (0,-\symlogEplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+    }
+
+\begin{comment}
+
+\newcommand{\plotEsymlog}[3]{%
+    \begin{tikzpicture}
+        \def\Eplotfile{\plotdir/prec64/E#1}
+        \def\Eplotlabel{#2}
+        \def\Eplotthreshold{#3}
+        \def\symlog{_symlog-15-1}
+        \input{\plotdir/prec64/E#1e\symlog.tex}
+        \begin{axis}[
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={},
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Re\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={,$-10^{-6}$,,$-10^{-12}$,,$0$,,$+10^{-12}$,,$+10^{-6}$,},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true
+            ]
+            \addplot[real, series, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=NormRe] {\Eplotfile 0\symlog.dat};
+
+            \addplot[real, gray] table[x=t, y=NormRe] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile e\symlog.dat};
+            \addplot[gray, errorband] fill between[of=lower and upper];
+
+            \addplot[real] table[x=t, y=NormRe] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile s\symlog.dat};
+            \ifnumless{#1}{5}{%
+                \addplot[real, errorband] fill between[of=lower and upper];
+
+                \begin{scope}[/pgfplots/restrict x to domain=\Eplotxmin:\Eplotthreshold]
+                    \addplot[real, thin] table[x=t, y=NormRe] {\Eplotfile f\symlog.dat};
+                    \addplot[draw=none, name path=upper] table[x=t, y=NormMaxRe] {\Eplotfile f\symlog.dat};
+                    \addplot[draw=none, name path=lower] table[x=t, y=NormMinRe] {\Eplotfile f\symlog.dat};
+                    \addplot[real, faint errorband] fill between[of=lower and upper];%
+                \end{scope}
+                }{%
+                \addplot[real, dark errorband] fill between[of=lower and upper];
+                }
+
+            \addplot[real, amflow] table[x=t, y=NormRe, y error plus expr=abs(\thisrow{NormMaxRe}-\thisrow{NormRe}), y error minus expr=abs(\thisrow{NormMinRe}-\thisrow{NormRe})] {\Eplotfile a\symlog.dat};
+
+        \end{axis}
+
+        \begin{axis}[
+            shift={(0,-(\symlogEplotheight + \Eplotsep))},
+            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={\xlabel},
+            xtick={0,4,16}, xmajorgrids=true,
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Im\Eplotlabel$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={,$-10^{-6}$,,$-10^{-12}$,,$0$,,$+10^{-12}$,,$+10^{-6}$,},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true,
+            axis background/.style={%
+                preaction={
+                    path picture={
+                        \path[pattern=north east lines, pattern color=gray!50] (axis cs:\Eplotxmin,\symlogymax) rectangle (axis cs:\Eplotthreshold,\symlogymin);
+                    }}}
+            ]
+
+            \addplot[imag, gray, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MaxIm] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MinIm] {\Eplotfile e\symlog.dat};
+            \addplot[imag, errorband, gray] fill between[of=lower and upper];
+
+            \addplot[imag, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MaxIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=MinIm] {\Eplotfile s\symlog.dat};
+            \ifnumless{#1}{5}{%
+                \addplot[imag, errorband] fill between[of=lower and upper];
+
+                \addplot[imag, thin, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormRe] {\Eplotfile f\symlog.dat};
+                \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormMaxRe] {\Eplotfile f\symlog.dat};
+                \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=NormMinRe] {\Eplotfile f\symlog.dat};
+                \addplot[imag, faint errorband] fill between[of=lower and upper];%
+                }{%
+                \addplot[imag, dark errorband] fill between[of=lower and upper];
+                }
+
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMaxIm] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMinIm] {\Eplotfile e\symlog.dat};
+            \addplot[imag, errorband, gray] fill between[of=lower and upper];
+
+            \addplot[imag, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMaxIm] {\Eplotfile s\symlog.dat};
+            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormMinIm] {\Eplotfile s\symlog.dat};
+            \addplot[imag, dark errorband] fill between[of=lower and upper];
+
+            \addplot[imag, amflow, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=Im, y error plus expr=abs(\thisrow{MaxIm}-\thisrow{Im}), y error minus expr=abs(\thisrow{MinIm}-\thisrow{Im})] {\Eplotfile a\symlog.dat};
+            \addplot[imag, amflow, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=NormIm, y error plus expr=abs(\thisrow{NormMaxIm}-\thisrow{NormIm}), y error minus expr=abs(\thisrow{NormMinIm}-\thisrow{NormIm})] {\Eplotfile a\symlog.dat};
+
+        \end{axis}
+        \useasboundingbox (0,-\symlogEplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+
+\end{comment}
+
 \newcommand{\plotTime}[1]{
-    \addplot[imag, ours  , E#1, complex legend={E#1}] table[x=t, y expr=\thisrow{eTime}/1e9] {\plotdir/E#1.dat};
-    \addplot[imag, secdec, E#1, forget plot         ] table[x=t, y expr=\thisrow{sTime}/1e9] {\plotdir/E#1.dat};
+    \def\plotfile{\plotdir/prec64/E#1}
+    \ifnumless{#1}{5}{%
+        \addplot[imag, ours  ,   E#1, triple legend={E#1}] table[x=t, y expr=\thisrow{Time}/1e9] {\plotfile e.dat};
+        \addplot[imag, secdec,   E#1, forget plot        ] table[x=t, y expr=\thisrow{Time}/1e9] {\plotfile s.dat};
+        \addplot[imag, feyntrop, E#1, forget plot        ] table[x=t, y expr=\thisrow{Time}/1e9] {\plotfile f.dat};
+        }{%
+        \addplot[imag, ours  ,   E#1, double legend={E#1}] table[x=t, y expr=\thisrow{Time}/1e9] {\plotfile e.dat};
+        \addplot[imag, secdec,   E#1, forget plot        ] table[x=t, y expr=\thisrow{Time}/1e9] {\plotfile s.dat};
+        }
+        index = 0
     }
 
 
@@ -170,7 +456,7 @@
 
 \newcommand{\Eplotxmin}{-8}
 \newcommand{\Eplotxmax}{+24}
-\newcommand{\Eplotlogymin}{1e-15}
+\newcommand{\Eplotlogymin}{1e-18}
 \newcommand{\Eplotlogymax}{1}
 \newcommand{\xlabel}{}
 
@@ -203,81 +489,6 @@
     \tikz[baseline=-0.6ex]{
         \draw[#1] (0,0) -- (19.5pt,0);
         }}
-
-
-\newcommand{\plotEsymlog}[3]{%
-    \begin{tikzpicture}
-        \def\Eplotfile{\plotdir/E#1_symlog.dat}
-        \def\Eplotlabel{#2}
-        \def\Eplotthreshold{#3}
-        \input{\plotdir/E#1_symlog.tex}
-        \begin{axis}[
-            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
-            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
-            xtick={0,4,16}, xmajorgrids=true, xticklabels={},
-            minor xtick={-9,-8,...,23},
-            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Re\Eplotlabel$},
-            ytick=\symlogsparseytick,
-            % This is \symlogsparseyticklabels, further pruned
-            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,,$0$,,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
-            yticklabel style={font=\tiny},
-            ymajorgrids=true, yminorgrids=true
-            ]
-            \addplot[real, series, restrict x to domain=-\Eplotthreshold:\Eplotthreshold] table[x=t, y=0NormRe] {\Eplotfile};
-
-            \addplot[draw=none, name path=upper] table[x=t, y=eNormMaxRe] {\Eplotfile};
-            \addplot[draw=none, name path=lower] table[x=t, y=eNormMinRe] {\Eplotfile};
-            \addplot[real, errorband, gray] fill between[of=lower and upper];
-
-            \addplot[real] table[x=t, y=sNormRe] {\Eplotfile};
-            \addplot[draw=none, name path=upper] table[x=t, y=sNormMaxRe] {\Eplotfile};
-            \addplot[draw=none, name path=lower] table[x=t, y=sNormMinRe] {\Eplotfile};
-            \addplot[real, errorband] fill between[of=lower and upper];
-
-        \end{axis}
-
-        \begin{axis}[
-            shift={(0,-(\symlogEplotheight + \Eplotsep))},
-            width=\Eplotwidth, height=\symlogEplotheight, scale only axis,
-            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={\xlabel},
-            xtick={0,4,16}, xmajorgrids=true,
-            minor xtick={-9,-8,...,23},
-            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Im\Eplotlabel$},
-            ytick=\symlogsparseytick,
-            % This is \symlogsparseyticklabels, further pruned
-            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,,$0$,,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
-            yticklabel style={font=\tiny},
-            ymajorgrids=true, yminorgrids=true,
-            axis background/.style={%
-                preaction={
-                    path picture={
-                        \path[pattern=north east lines, pattern color=gray!50] (axis cs:\Eplotxmin,\symlogymax) rectangle (axis cs:\Eplotthreshold,\symlogymin);
-                    }}}
-            ]
-
-            \addplot[imag, gray, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eIm] {\Eplotfile};
-            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eMaxIm] {\Eplotfile};
-            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=eMinIm] {\Eplotfile};
-            \addplot[imag, errorband, gray] fill between[of=lower and upper];
-
-            \addplot[imag, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sIm] {\Eplotfile};
-            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sMaxIm] {\Eplotfile};
-            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotxmin:\Eplotthreshold] table[x=t, y=sMinIm] {\Eplotfile};
-            \addplot[imag, errorband] fill between[of=lower and upper];
-
-            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=eNormMaxIm] {\Eplotfile};
-            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=eNormMinIm] {\Eplotfile};
-            \addplot[imag, errorband, gray] fill between[of=lower and upper];
-
-            \addplot[imag, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormIm] {\Eplotfile};
-            \addplot[draw=none, name path=upper, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormMaxIm] {\Eplotfile};
-            \addplot[draw=none, name path=lower, restrict x to domain=\Eplotthreshold:\Eplotxmax] table[x=t, y=sNormMinIm] {\Eplotfile};
-            \addplot[imag, errorband] fill between[of=lower and upper];
-
-        \end{axis}
-        \useasboundingbox (0,-\symlogEplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
-    \end{tikzpicture}
-    }
 
 \newsetlength{\hybridplotwidth}{.8\Eplotwidth}
 \newsetlength{\hybridplotheight}{\symlogEplotheight}

@@ -20,6 +20,7 @@
 
 \usepackage{cleveref}
 \usepackage{mathtools} % coloneq, allowdisplaybreaks
+\usepackage{comment}
 
 \usepackage{subcaption}
 \usepackage{pgf,tikz}
@@ -943,8 +944,8 @@
 \begin{figure}
     \hspace{-1.5cm}
 
-    \def\hybridfile{\plotdir/hybrid_err_t-2.0}
-    \input{\hybridfile_Hreg_reldiff_symlog.tex}
+    \def\hybridfile{\plotdir/prec256/hybrid_err_t-2.0}
+    \input{\hybridfile_Hreg_symlog.tex}
 
     \tikzset{
          SJ1/.style={plotI,   solid,              very thick},
@@ -957,43 +958,51 @@
     \begin{tikzpicture}
         \begin{semilogxaxis}[
             width=.8\textwidth, height=\Eplotheight, scale only axis,
-            xmin=3, xmax=1e8,
+            xmin=1, xmax=1e4,
             xmajorgrids=true,
 %             xlabel={$\chi$},
             xticklabels={},
             ymin=\symlogymin, ymax=\symlogymax,
             ytick={\symlogsparseytick},
-            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,$-10^{-12}$,,$0$,,$-10^{-12}$,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
+            yticklabels={$-10^{-3}$,$-10^{-6}$,$-10^{-9}$,$-10^{-12}$,$-10^{-15}$,,$0$,,$-10^{-15}$,$-10^{-12}$,$+10^{-9}$,$+10^{-6}$,$+10^{-3}$},
             yticklabel style={font=\tiny},
             ymajorgrids=true,
             legend pos=outer north east
             ]
 
-            \addplot[SJ1]  table[x=chi, y=result, col sep=tab] {\hybridfile_SJ1_reldiff_symlog.dat};
-            \addplot[SJ2]  table[x=chi, y=result, col sep=tab] {\hybridfile_SJ2_reldiff_symlog.dat};
-            \addplot[Hreg] table[x=chi, y=result, col sep=tab] {\hybridfile_Hreg_reldiff_symlog.dat};
-            \addplot[E1h2] table[x=chi, y=result, col sep=tab] {\hybridfile_E1h2_reldiff_symlog.dat};
+            \addplot[SJ1]  table[x=chi, y=reldiff, col sep=tab] {\hybridfile_SJ1_symlog.dat};
+            \addplot[SJ2]  table[x=chi, y=reldiff, col sep=tab] {\hybridfile_SJ2_symlog.dat};
+            \addplot[Hreg] table[x=chi, y=reldiff, col sep=tab] {\hybridfile_Hreg_symlog.dat};
+            \addplot[E1h2] table[x=chi, y=reldiff, col sep=tab] {\hybridfile_E1h2_symlog.dat};
+
+            \addplot[SJ1, thin]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ1_symlog.dat};
+            \addplot[SJ2, thin]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ2_symlog.dat};
+            \addplot[Hreg, thin] table[x=chi, y=dresult, col sep=tab] {\hybridfile_Hreg_symlog.dat};
+            \addplot[E1h2, thin] table[x=chi, y=dresult, col sep=tab] {\hybridfile_E1h2_symlog.dat};
 
             \legend{$\IJ1$,$\IJ2$,$\IE1$,$\IE2$}
         \end{semilogxaxis}
         \begin{loglogaxis}[
             shift={(0,-(\Eplotheight + \Eplotsep)},
             width=.8\textwidth, height=\Eplotheight, scale only axis,
-            xmin=1, xmax=1e8,
+            xmin=1, xmax=1e4,
             xmajorgrids=true,
             xlabel={$\chi$},
             ymajorgrids=true,
+            ytick={1,1e-3,1e-6,1e-9,1e-12,1e-15},
             ]
 
-            \addplot[SJ1]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ1.dat};
-            \addplot[SJ2]  table[x=chi, y=dresult, col sep=tab] {\hybridfile_SJ2.dat};
-            \addplot[Hreg] table[x=chi, y=dresult, col sep=tab] {\hybridfile_Hreg.dat};
-            \addplot[E1h2] table[x=chi, y=dresult, col sep=tab] {\hybridfile_E1h2.dat};
+            \addplot[SJ1]  table[x=chi, y=tail_relerr, col sep=tab] {\hybridfile_SJ1.dat};
+            \addplot[SJ2]  table[x=chi, y=tail_relerr, col sep=tab] {\hybridfile_SJ2.dat};
+            \addplot[Hreg] table[x=chi, y=tail_relerr, col sep=tab] {\hybridfile_Hreg.dat};
+            \addplot[E1h2] table[x=chi, y=tail_relerr, col sep=tab] {\hybridfile_E1h2.dat};
 
-%             \addplot[SJ1,  thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_SJ1.dat};
-%             \addplot[SJ2,  thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_SJ2.dat};
-%             \addplot[Hreg, thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_Hreg.dat};
-%             \addplot[E1h2, thin] table[x=chi, y=dhead, col sep=tab] {\hybridfile_E1h2.dat};
+            \addplot[SJ1,  thin] table[x=chi, y expr=abs(\thisrow{tail}), col sep=tab] {\hybridfile_SJ1.dat};
+            \addplot[SJ2,  thin] table[x=chi, y expr=abs(\thisrow{tail}), col sep=tab] {\hybridfile_SJ2.dat};
+            \addplot[Hreg, thin] table[x=chi, y expr=abs(\thisrow{tail}), col sep=tab] {\hybridfile_Hreg.dat};
+            \addplot[E1h2, thin] table[x=chi, y expr=abs(\thisrow{tail}), col sep=tab] {\hybridfile_E1h2.dat};
+
+            \addplot[gray] table[x=chi, y expr=\thisrow{time}/1e9, col sep=tab] {\hybridfile_Hreg.dat};
         \end{loglogaxis}
         \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
     \end{tikzpicture}
@@ -1056,6 +1065,206 @@
 \end{figure}
 
 \begin{figure}
+    \tikzsetnextfilename{fig-E4}
+    \hspace{-1cm}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=.7\textwidth, height=1.5*\Eplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax,
+            ymin=-32, ymax=+32,
+            xlabel={$t$},
+            ylabel={},
+            xtick={0,4,16}, xmajorgrids=true,
+            minor xtick={-9,-8,...,23},
+            legend pos=north west
+            ]
+            \drawzerolines{\Eplotxmin}{\Eplotxmax}{-32}{+32}
+
+            \def\Eplotfile{\plotdir/prec64/E4e.dat}
+            \addplot[real, gray, forget plot]
+                table[x=t, y=Re, col sep=tab] {\Eplotfile};
+            \addplot[imag, gray, forget plot, restrict x to domain=4:\Eplotxmax]
+                table[x=t, y=Im, col sep=tab] {\Eplotfile};
+
+            \def\Eplotfile{\plotdir/prec64/E123e.dat}
+            \addplot[real, E1, complex legend={E1}]
+                table[x=t, y expr=\thisrow{Re1}*(x^2 - 20*x + 160)/96, col sep=tab] {\Eplotfile};
+            \addplot[imag, E1, forget plot, restrict x to domain=16:\Eplotxmax]
+                table[x=t, y expr=\thisrow{Im1}*(x^2 - 20*x + 160)/96, col sep=tab] {\Eplotfile};
+
+            \addplot[real, E2, complex legend={E2}]
+                table[x=t, y expr=-\thisrow{Re2}*(x^2 - 28*x + 120)*(x-16)/96, col sep=tab] {\Eplotfile};
+            \addplot[imag, E2, forget plot, restrict x to domain=16:\Eplotxmax]
+                table[x=t, y expr=-\thisrow{Im2}*(x^2 - 28*x + 120)*(x-16)/96, col sep=tab] {\Eplotfile};
+
+            \addplot[real, E3, complex legend={E3}]
+                table[x=t, y expr=-\thisrow{Re3}*(x-4)*(x-16)^2/48, col sep=tab] {\Eplotfile};
+            \addplot[imag, E3, forget plot, restrict x to domain=16:\Eplotxmax]
+                table[x=t, y expr=-\thisrow{Im3}*(x-4)*(x-16)^2/48, col sep=tab] {\Eplotfile};
+
+            \addplot[real, black, complex legend={black}]
+                table[x=t, y expr=\thisrow{Re1}*(x^2 - 20*x + 160)/96-\thisrow{Re2}*(x^2 - 28*x + 120)*(x-16)/96-\thisrow{Re3}*(x-4)*(x-16)^2/48, col sep=tab] {\Eplotfile};
+            \addplot[imag, black, forget plot, restrict x to domain=16:\Eplotxmax]
+                table[x=t, y expr=\thisrow{Im1}*(x^2 - 20*x + 160)/96-\thisrow{Im2}*(x^2 - 28*x + 120)*(x-16)/96-\thisrow{Im3}*(x-4)*(x-16)^2/48, col sep=tab] {\Eplotfile};
+
+
+            \addlegendimage{complex legend={gray}};
+
+            \legend{$\propto E_1(2;t)$,$\propto E_2(2;t)$,$\propto E_3(2;t)$,sum,$\bar E_4(4;t)$}
+        \end{axis}
+    \end{tikzpicture}
+    \tikzsetnextfilename{fig-E4-inset}
+    \begin{tikzpicture}
+        \begin{axis}[
+            width=.175\textwidth, height=1.5*\Eplotheight, scale only axis,
+            xmin=16, xmax=\Eplotxmax,
+            ymin=-.01, ymax=.12,
+            xlabel={\vphantom{$t$}},
+            ylabel={},
+            xtick={16}, xmajorgrids=true,
+            minor xtick={17,...,23},
+            ytick={0,.025,.05,.075,.1},
+            yticklabels={0,0.025,0.05,0.075,0.1},
+            yticklabel pos=right,
+            restrict y to domain=-1:1
+            ]
+            \drawzerolines{16}{\Eplotxmax}{-.01}{+.12}
+
+            \def\Eplotfile{\plotdir/prec64/E123e.dat}
+            \addplot[imag, black, forget plot, restrict x to domain=16:\Eplotxmax]
+                table[x=t, y expr=\thisrow{Im1}*(x^2 - 20*x + 160)/96-\thisrow{Im2}*(x^2 - 28*x + 120)*(x-16)/96-\thisrow{Im3}*(x-4)*(x-16)^2/48, col sep=tab] {\Eplotfile};
+        \end{axis}
+    \end{tikzpicture}
+    \figEfourcaption
+    \label{fig:E4}
+\end{figure}
+
+\begin{figure}
+    \tikzsetnextfilename{fig-E1}
+    \begin{tikzpicture}
+        \def\Eplotfile{\plotdir/prec64/E1}
+        \def\symlog{_symlog-24-6}
+        \input{\plotdir/prec64/E1e\symlog.tex}
+        \begin{axis}[
+            width=1.5\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={0,4,16}, xticklabel pos=top,
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Re E_1(2;t)$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={$-10^{-9\phantom0}$,$-10^{-12}$,$-10^{-15}$,$-10^{-18}$,$-10^{-21}$,,$0$,,$+10^{-21}$,$+10^{-18}$,$+10^{-15}$,$+10^{-12}$,$+10^{-9\phantom0}$},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true,
+            legend pos=outer north east, legend cell align=left,
+            ]
+            \addplot[bessel, forget plot] table[x=t, y=NormRe]                  {\Eplotfile b\symlog.dat};
+            \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxRe] {\Eplotfile b\symlog.dat};
+            \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinRe] {\Eplotfile b\symlog.dat};
+            \addplot[plotI, errorband, legend with error={bessel}] fill between[of=lower and upper];
+
+            \addplot[polylog, forget plot] table[x=t, y=NormRe]                 {\Eplotfile l\symlog.dat};
+            \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxRe] {\Eplotfile l\symlog.dat};
+            \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinRe] {\Eplotfile l\symlog.dat};
+            \addplot[plotVI, errorband, legend with error={polylog}] fill between[of=lower and upper];
+
+            \addplot[eisen, forget plot] table[x=t, y=NormRe]                 {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxRe] {\Eplotfile e\symlog.dat};
+            \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinRe] {\Eplotfile e\symlog.dat};
+            \addplot[plotIII, errorband, legend with error={eisen}] fill between[of=lower and upper];
+
+            \addplot[poisson, forget plot] table[x=t, y=NormRe]                 {\Eplotfile p\symlog.dat};
+            \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxRe] {\Eplotfile p\symlog.dat};
+            \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinRe] {\Eplotfile p\symlog.dat};
+            \addplot[plotIV, errorband, legend with error={poisson}] fill between[of=lower and upper];
+
+            \addplot[series, restrict x to domain=-8:16, forget plot] table[x=t, y=NormRe]                              {\Eplotfile 0\symlog.dat};
+            \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxRe] {\Eplotfile 0\symlog.dat};
+            \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinRe] {\Eplotfile 0\symlog.dat};
+            \addplot[series, errorband, legend with error={series}] fill between[of=lower and upper];
+
+            \legend{Bessel,Polylogarithm,Eisenstein,Poisson,Series}
+
+        \end{axis}
+        \begin{axis}[
+            shift={(0,-(\symlogEplotheight + \Eplotsep))},
+            width=1.5\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={},
+            minor xtick={-9,-8,...,23},
+            ymin=\symlogymin, ymax=\symlogymax, ylabel={\small$\Im E_1(2;t)$},
+            ytick=\symlogsparseytick,
+            % This is \symlogsparseyticklabels, further pruned
+            yticklabels={$-10^{-9\phantom0}$,$-10^{-12}$,$-10^{-15}$,$-10^{-18}$,$-10^{-21}$,,$0$,,$+10^{-21}$,$+10^{-18}$,$+10^{-15}$,$+10^{-12}$,$+10^{-9\phantom0}$},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true, yminorgrids=true,
+            axis background/.style={%
+                preaction={
+                    path picture={
+                        \path[pattern=north east lines, pattern color=gray!50] (axis cs:\Eplotxmin,\symlogymax) rectangle (axis cs:16,\symlogymin);
+                    }}}
+            ]
+
+            \begin{scope}[/pgfplots/restrict x to domain=-8:16]
+                \addplot[bessel, forget plot] table[x=t, y=Im]                  {\Eplotfile b\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=MaxIm] {\Eplotfile b\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=MinIm] {\Eplotfile b\symlog.dat};
+                \addplot[bessel, errorband] fill between[of=lower and upper];
+
+                \addplot[polylog, forget plot] table[x=t, y=Im]                 {\Eplotfile l\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=MaxIm] {\Eplotfile l\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=MinIm] {\Eplotfile l\symlog.dat};
+                \addplot[polylog, errorband] fill between[of=lower and upper];
+
+                \addplot[eisen, forget plot] table[x=t, y=Im]                {\Eplotfile e\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=MaxIm] {\Eplotfile e\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=MinIm] {\Eplotfile e\symlog.dat};
+                \addplot[eisen, errorband] fill between[of=lower and upper];
+
+                \addplot[poisson, forget plot] table[x=t, y=Im]                 {\Eplotfile p\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=MaxIm] {\Eplotfile p\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=MinIm] {\Eplotfile p\symlog.dat};
+                \addplot[poisson, errorband] fill between[of=lower and upper];
+            \end{scope}
+            \begin{scope}[/pgfplots/restrict x to domain=16:32]
+                \addplot[polylog, forget plot] table[x=t, y=NormIm]                 {\Eplotfile l\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxIm] {\Eplotfile l\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinIm] {\Eplotfile l\symlog.dat};
+                \addplot[polylog, errorband] fill between[of=lower and upper];
+
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxIm] {\Eplotfile e\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinIm] {\Eplotfile e\symlog.dat};
+                \addplot[eisen, errorband] fill between[of=lower and upper];
+
+                \addplot[poisson, forget plot] table[x=t, y=NormIm]                 {\Eplotfile p\symlog.dat};
+                \addplot[draw=none, name path=upper, forget plot] table[x=t, y=NormMaxIm] {\Eplotfile p\symlog.dat};
+                \addplot[draw=none, name path=lower, forget plot] table[x=t, y=NormMinIm] {\Eplotfile p\symlog.dat};
+                \addplot[poisson, errorband] fill between[of=lower and upper];
+            \end{scope}
+        \end{axis}
+        \begin{semilogyaxis}[
+            shift={(0,-(2\symlogEplotheight + 2\Eplotsep))},
+            width=1.5\Eplotwidth, height=\symlogEplotheight, scale only axis,
+            xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={$t$},
+            xtick={0,4,16}, xmajorgrids=true, xticklabels={0,4,16},
+            minor xtick={-9,-8,...,23},
+            ylabel={Time [s]},
+            yticklabel style={font=\tiny},
+            ymajorgrids=true,
+            ]
+            \addplot[bessel, restrict x to domain=-8:16] table[x=t, y expr=\thisrow{Time}/1e9] {\Eplotfile b.dat};
+            \addplot[polylog] table[x=t, y expr=\thisrow{Time}/1e9] {\Eplotfile l.dat};
+            \addplot[eisen] table[x=t, y expr=\thisrow{Time}/1e9] {\Eplotfile e.dat};
+            \addplot[poisson] table[x=t, y expr=\thisrow{Time}/1e9] {\Eplotfile p.dat};
+            \addplot[series, restrict x to domain=-8:16] table[x=t, y expr=\thisrow{Time}/1e9] {\Eplotfile 0.dat};
+        \end{semilogyaxis}
+        \useasboundingbox (0,-2\symlogEplotheight) + (0,-2\Eplotsep) + (0,-1.6cm); % Force larger bounding box
+    \end{tikzpicture}
+    \figEonecaption
+    \label{fig:E1}
+\end{figure}
+
+\begin{figure}
     \hspace{-1cm}
     \tikzsetnextfilename{fig-reldiff-E1}
     \plotEsymlog{1}{E_1(2;t)}{16}
@@ -1074,7 +1283,7 @@
     \tikzsetnextfilename{fig-reldiff-E6}
     \plotEsymlog{6}{\bar E_6(4;t)}{4}
 
-    \hspace{2.7cm}$t$\hspace{6.8cm}$t$ % Very hacky but gets the job done
+    \hspace{3.7cm}$t$\hspace{6.8cm}$t$ % Very hacky but gets the job done
 
     \figreldiffcaption
     \label{fig:reldiff}
@@ -1089,19 +1298,29 @@
             xmin=\Eplotxmin, xmax=\Eplotxmax, xlabel={$t$},
             xtick={0,4,16},
             minor xtick={-9,-8,...,23},
-            ymin=2e-3, ymax=25, ylabel={Time [seconds/sample]},
+            ymin=5e-3, ymax=2e2, ylabel={Time [s]},
             ymajorgrids=true, xmajorgrids=true,
             legend pos=outer north east, legend cell align=left
             ]
 
-            \plotTime{1}
-            \plotTime{2}
-            \plotTime{3}
-            \plotTime{4}
-            \plotTime{5}
-            \plotTime{6}
+            \plotTime{1};
+            \plotTime{2};
+            \plotTime{3};
+            \plotTime{4};
+            \plotTime{5};
+            \plotTime{6};
 
-            \legend{$E_1(2;t)$,$E_2(2;t)$,$E_3(2;t)$,$\bar E_4(4;t)$,$\bar E_5(4;t)$,$\bar E_6(4;t)$}
+            \addplot[E1, amflow, forget plot] table[x=t, y=Time] {../plots/prec64/E1a.dat};
+            \addplot[E4, amflow, forget plot] table[x=t, y=Time] {../plots/prec64/E4a.dat};
+
+            \addlegendimage{ours, gray};
+            \addlegendimage{secdec, gray};
+            \addlegendimage{feyntrop, gray};
+            \addlegendimage{amflow, gray};
+
+            \legend{
+                $E_1(2;t)$,$E_2(2;t)$,$E_3(2;t)$,$\bar E_4(4;t)$,$\bar E_5(4;t)$,$\bar E_6(4;t)$,
+                this work, \texttt{pySecDec}, \texttt{FeynTrop}, \texttt{AMFlow}};
 
         \end{semilogyaxis}
     \end{tikzpicture}
@@ -1109,131 +1328,153 @@
     \label{fig:time}
 \end{figure}
 
-\begin{figure}
-    \def\Eplotfile{\plotdir/PiE.dat}
-    \hspace{-1cm}
-    \tikzsetnextfilename{fig-PiE}
-    \begin{tikzpicture}
-        \begin{axis}[
-%                     width=\Eplotwidth,
-                width=.8\textwidth,
-                height=2*\Eplotheight, scale only axis,
-%                     ylabel={$\Re\bar\Pi_E(t)$},
-%                     ylabel={$\bar\Pi_E(t)$},
-                xmin=\Eplotxmin, xmax=\Eplotxmax,
-%                     xlabel={$t$},
-                ylabel={$\bar\Pi(t)$},
-                xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
-                minor xtick={-9,-8,...,23},
-                ymin=-245, ymax=245, ytick distance=50,
-                legend pos=outer north east, reverse legend, legend cell align=left
-                ]
+% \begin{figure}
+%     \def\Eplotfile{\plotdir/prec128/PiE.dat}
+%     \hspace{-1cm}
+%     \tikzsetnextfilename{fig-PiE}
+%     \begin{tikzpicture}
+%         \begin{axis}[
+% %                     width=\Eplotwidth,
+%                 width=.8\textwidth,
+%                 height=2*\Eplotheight, scale only axis,
+% %                     ylabel={$\Re\bar\Pi_E(t)$},
+% %                     ylabel={$\bar\Pi_E(t)$},
+%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
+% %                     xlabel={$t$},
+%                 ylabel={$\bar\Pi(t)$},
+%                 xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
+%                 minor xtick={-9,-8,...,23},
+%                 ymin=-245, ymax=245, ytick distance=50,
+%                 legend pos=outer north east, reverse legend, legend cell align=left
+%                 ]
+%
+%             %%% Real and imag together
+%             \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiE0, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiE0, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiE6, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE6, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiE5, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE5, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiE3, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, E3, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE3, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiE2, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, E2, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE2, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiE1, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, thick, E1, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE1, col sep=tab] {\Eplotfile};
+%             \addplot[real, series, black,          restrict x to domain=\Eplotxmin:16] table[x=t, y=0RePiE, col sep=tab] {\Eplotfile};
+%             \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiE, col sep=tab] {\Eplotfile};
+%             \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE, col sep=tab] {\Eplotfile};
+%
+%             \legend{rem.,$\propto\bar E_6$,$\propto\bar E_5$,$\propto E_3$,$\propto E_2$,$\propto E_1$,series,$\bar \Pi_E$}
+%
+%         \end{axis}
+%         \begin{semilogyaxis}[
+%                 shift={(0,-(\Eplotheight + \Eplotsep))},
+%                 width=.8\textwidth,
+%                 height=\Eplotheight, scale only axis,
+% %                     ylabel={$\delta\bar\Pi_E(t)$},
+%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                 xtick={0,4,16}, xmajorgrids=true,
+%                 minor xtick={-9,-8,...,23},
+%                 xlabel={$t$},
+%                 ylabel={$\delta\bar\Pi(t)$},
+%                 ymin=1e-16, ymax=1e-5, ytick={1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
+%                 ]
+%
+%             \addplot[real, total]         table[x=t, y=eAbsRePiE, col sep=tab]  {\Eplotfile};
+%             \addplot[imag, total]         table[x=t, y=eAbsImPiE, col sep=tab]  {\Eplotfile};
+%             \addplot[real, thick, gray]   table[x=t, y=eAbsRePiE0, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, gray]   table[x=t, y=eAbsImPiE0, col sep=tab] {\Eplotfile};
+%             \addplot[real, thick, E6]     table[x=t, y=eAbsRePiE6, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, E6]     table[x=t, y=eAbsImPiE6, col sep=tab] {\Eplotfile};
+%             \addplot[real, thick, E5]     table[x=t, y=eAbsRePiE5, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, E5 ]    table[x=t, y=eAbsImPiE5, col sep=tab] {\Eplotfile};
+%             \addplot[real, thick, E3]     table[x=t, y=eAbsRePiE3, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, E3]     table[x=t, y=eAbsImPiE3, col sep=tab] {\Eplotfile};
+%             \addplot[real, thick, E2]     table[x=t, y=eAbsRePiE2, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, E2]     table[x=t, y=eAbsImPiE2, col sep=tab] {\Eplotfile};
+%             \addplot[real, thick, E1]     table[x=t, y=eAbsRePiE1, col sep=tab] {\Eplotfile};
+%             \addplot[imag, thick, E1]     table[x=t, y=eAbsImPiE1, col sep=tab] {\Eplotfile};
+%             \addplot[real, series, black] table[x=t, y=0AbsRePiE, col sep=tab]  {\Eplotfile};
+%
+%         \end{semilogyaxis}
+%         \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+%     \end{tikzpicture}
+%
+%     \figPiEcaption
+%     \label{fig:PiE}
+% \end{figure}
 
-            %%% Real and imag together
-            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiE0, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiE0, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiE6, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE6, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiE5, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE5, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiE3, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, E3, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE3, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiE2, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, E2, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE2, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiE1, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, thick, E1, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE1, col sep=tab] {\Eplotfile};
-            \addplot[real, series, black,          restrict x to domain=\Eplotxmin:16] table[x=t, y=0RePiE, col sep=tab] {\Eplotfile};
-            \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiE, col sep=tab] {\Eplotfile};
-            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE, col sep=tab] {\Eplotfile};
 
-            \legend{rem.,$\propto\bar E_6$,$\propto\bar E_5$,$\propto E_3$,$\propto E_2$,$\propto E_1$,series,$\bar \Pi_E$}
-
-        \end{axis}
-        \begin{semilogyaxis}[
-                shift={(0,-(\Eplotheight + \Eplotsep))},
-                width=.8\textwidth,
-                height=\Eplotheight, scale only axis,
-%                     ylabel={$\delta\bar\Pi_E(t)$},
-                xmin=\Eplotxmin, xmax=\Eplotxmax,
-                xtick={0,4,16}, xmajorgrids=true,
-                minor xtick={-9,-8,...,23},
-                xlabel={$t$},
-                ylabel={$\delta\bar\Pi(t)$},
-                ymin=1e-16, ymax=1e-5, ytick={1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
-                ]
-
-            \addplot[real, total]         table[x=t, y=eAbsRePiE, col sep=tab]  {\Eplotfile};
-            \addplot[imag, total]         table[x=t, y=eAbsImPiE, col sep=tab]  {\Eplotfile};
-            \addplot[real, thick, gray]   table[x=t, y=eAbsRePiE0, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, gray]   table[x=t, y=eAbsImPiE0, col sep=tab] {\Eplotfile};
-            \addplot[real, thick, E6]     table[x=t, y=eAbsRePiE6, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, E6]     table[x=t, y=eAbsImPiE6, col sep=tab] {\Eplotfile};
-            \addplot[real, thick, E5]     table[x=t, y=eAbsRePiE5, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, E5 ]    table[x=t, y=eAbsImPiE5, col sep=tab] {\Eplotfile};
-            \addplot[real, thick, E3]     table[x=t, y=eAbsRePiE3, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, E3]     table[x=t, y=eAbsImPiE3, col sep=tab] {\Eplotfile};
-            \addplot[real, thick, E2]     table[x=t, y=eAbsRePiE2, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, E2]     table[x=t, y=eAbsImPiE2, col sep=tab] {\Eplotfile};
-            \addplot[real, thick, E1]     table[x=t, y=eAbsRePiE1, col sep=tab] {\Eplotfile};
-            \addplot[imag, thick, E1]     table[x=t, y=eAbsImPiE1, col sep=tab] {\Eplotfile};
-            \addplot[real, series, black] table[x=t, y=0AbsRePiE, col sep=tab]  {\Eplotfile};
-
-        \end{semilogyaxis}
-        \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
-    \end{tikzpicture}
-
-    \figPiEcaption
-    \label{fig:PiE}
-\end{figure}
+% \begin{figure}
+%     \def\Jplotfile{\plotdir/PiJ.dat}
+%     \def\Zplotfile{\plotdir/PiZ.dat}
+%     \hspace{-1cm}
+%     \tikzsetnextfilename{fig-PiJ}
+%     \begin{tikzpicture}
+%         \begin{axis}[
+%                 width=.8\textwidth,
+%                 height=2*\Eplotheight, scale only axis,
+% %                     ylabel={$\Re\bar\Pi_J(t)$},
+% %                     ylabel={$\bar\Pi_J(t)$},
+%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
+% %                     xlabel={$t$},
+%                 xtick={0,4,16}, xmajorgrids=true,
+%                 minor xtick={-9,-8,...,23},
+%                 xlabel={$t$},
+%                 ylabel={$\bar\Pi(t)$},
+%                 ymin=-345, ymax=345, ytick distance=50,
+%                 legend pos=outer north east, reverse legend, legend cell align=left
+%                 ]
+%
+%             \addplot[real, total, seriesdotted]                                        table[x=t, y=eRePiZ, col sep=tab] {\Zplotfile};
+%             \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiJ0, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiJ0, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiJ111, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ111, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiJ21, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ21, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E4}, thick, E4]                      table[x=t, y=eRePiJ11, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E4, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ11, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiJ3, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E3, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ3, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiJ2, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E2, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ2, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiJ1, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, thick, E1, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ1, col sep=tab] {\Jplotfile};
+%             \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiJ, col sep=tab] {\Jplotfile};
+%             \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ, col sep=tab] {\Jplotfile};
+%
+%             \legend{$\bar\Pi_\zeta$,rem.,$\propto[\Jbub1]^3$,$\propto\Jbub1\Jbub2$,$\propto[\Jbub1]^2$,$\propto\Jbub3$,$\propto\Jbub2$,$\propto\Jbub1$,$\bar\Pi_J$}
+%
+%         \end{axis}
+%     \end{tikzpicture}
+%     \figPiJcaption
+%     \label{fig:PiJ}
+% \end{figure}
 
 
-\begin{figure}
-    \def\Jplotfile{\plotdir/PiJ.dat}
-    \def\Zplotfile{\plotdir/PiZ.dat}
-    \hspace{-1cm}
-    \tikzsetnextfilename{fig-PiJ}
-    \begin{tikzpicture}
-        \begin{axis}[
-                width=.8\textwidth,
-                height=2*\Eplotheight, scale only axis,
-%                     ylabel={$\Re\bar\Pi_J(t)$},
-%                     ylabel={$\bar\Pi_J(t)$},
-                xmin=\Eplotxmin, xmax=\Eplotxmax,
-%                     xlabel={$t$},
-                xtick={0,4,16}, xmajorgrids=true,
-                minor xtick={-9,-8,...,23},
-                xlabel={$t$},
-                ylabel={$\bar\Pi(t)$},
-                ymin=-345, ymax=345, ytick distance=50,
-                legend pos=outer north east, reverse legend, legend cell align=left
-                ]
-
-            \addplot[real, total, seriesdotted]                                        table[x=t, y=eRePiZ, col sep=tab] {\Zplotfile};
-            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiJ0, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiJ0, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiJ111, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ111, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiJ21, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ21, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E4}, thick, E4]                      table[x=t, y=eRePiJ11, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E4, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ11, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiJ3, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E3, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ3, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiJ2, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E2, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ2, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiJ1, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, thick, E1, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ1, col sep=tab] {\Jplotfile};
-            \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiJ, col sep=tab] {\Jplotfile};
-            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ, col sep=tab] {\Jplotfile};
-
-            \legend{$\bar\Pi_\zeta$,rem.,$\propto[\Jbub1]^3$,$\propto\Jbub1\Jbub2$,$\propto[\Jbub1]^2$,$\propto\Jbub3$,$\propto\Jbub2$,$\propto\Jbub1$,$\bar\Pi_J$}
-
-        \end{axis}
-    \end{tikzpicture}
-    \figPiJcaption
-    \label{fig:PiJ}
-\end{figure}
-
+% \begin{figure}
+%     \newcommand{\plotfile}{../plots/prec128/E5e_err.dat}
+%     \tikzsetnextfilename{fig-errors}
+%     \begin{tikzpicture}
+%         \begin{axis}[
+%                 ybar stacked, bar width=.5ex,
+%                 xmin=-8,xmax=20,
+%                 xlabel={$t$},
+%                 ymin=-.1, ymax=1.1,
+%                 legend pos=outer north east]
+%             \addplot[draw=none, fill=plotI  ] table [x expr=\coordindex-7, y=boundary, col sep=tab] {\plotfile};
+%             \addplot[draw=none, fill=plotII ] table [x expr=\coordindex-7, y=Irat,     col sep=tab] {\plotfile};
+%             \addplot[draw=none, fill=plotIII] table [x expr=\coordindex-7, y=IJ,       col sep=tab] {\plotfile};
+%             \addplot[draw=none, fill=plotIV ] table [x expr=\coordindex-7, y=IE,       col sep=tab] {\plotfile};
+%
+%             \legend{$B_5$,$\I_\rat$,$\I_J$,$\I_E$};
+%         \end{axis}
+%     \end{tikzpicture}
+%     \figerrorscaption
+%     \label{fig:errors}
+% \end{figure}
 
 % \begin{figure}
 %     \centering
