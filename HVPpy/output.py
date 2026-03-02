@@ -1,8 +1,10 @@
 
 from heapq import merge
 from itertools import product, groupby
+from contextlib import nullcontext
 
-from mpmath import log, zeta, pi, inf, exp, mpf, factorial
+from mpmath import mpf, mpc, mp
+from mpmath import log, zeta, pi, inf, exp, factorial
 from numpy import linspace
 
 from .clogging import clogger, ColorFormatter
@@ -14,22 +16,11 @@ from .method import Method
 from .t_tau_beta import t_to_beta, t_to_tau, tau_to_t
 from .theta import t_to_theta, theta_to_tau, theta_to_t
 from .integration import QuadError, IntegrationContext
-
-threshold = {
-    1: 16, 2: 16, 3:16,
-    4: 4, 5: 4, 6: 4
-    }
-problematic = {
-    1: set(), 2: {16}, 3: {0,4,16}, # 0 and 4 are removable singularities but they're a pain to remove
-    4: {0}, 5: {0,4}, 6: {0,4}      # Likewise, 0 (and 4 for E5) are removable
-    }
-problematic_with_theta = {
-    1: {0,4,16}, 2: {0,4,16}, 3: {0,4,16},
-    4: {0,4}, 5: {0,4,16}, 6: {0,4,16}
-    }
+from .points import *
 
 def plot_linspace(x_min, x_max, x_res,
-                  refine_pts=[], refine_lvl=3, refine_size=1, refine_pow=2):
+                  refine_pts=[], refine_lvl=3, refine_size=1, refine_pow=2,
+                  over_theta=False):
     if refine_lvl <= 0 or not refine_pts:
         yield from linspace(x_min, x_max, int(1 + x_res*(x_max-x_min)))
         return
@@ -61,64 +52,65 @@ def plot_linspace(x_min, x_max, x_res,
             sorted(1/x if x != 0. else inf # Special treatment for point at infinity
                 for x in plot_linspace(-refine_size, +refine_size, x_res,
                                         [0.], refine_lvl, refine_size/refine_pow, refine_pow))
-            for point in refine_pts
+            for point in refine_pts if not ((point < x_min or point > x_max) or (over_theta and point == 0))
             )
         )
 
+def plot_dir():
+    return f"plots/prec{mp.prec}"
+def plot_filename(name, method, suffix="", **options):
+    return f"""{plot_dir()}/{name}{method.value}{
+            options.get("max_series_order", '')
+        }{
+            'e' if "elliptic_e4" in options else ''
+        }{suffix}.dat"""
+
 def evaluate_masters(tt, masters, methods, **options):
-    print(f"{masters} t={tt}, tau={t_to_tau(tt)}, beta={t_to_beta(tt)}{', '.join(f'{o}={v}' for o,v in options.items())}" + '\n')
+    over_theta = options.get("theta_point", False)
+    if over_theta:
+        t = theta_to_t(tt)
+        clogger.debug(f"{masters} theta={tt}, t={t}, tau={theta_to_tau(tt)}, beta={t_to_beta(t)}{', '.join(f'{o}={v}' for o,v in options.items())}")
+    else:
+        t = tt
+        clogger.debug(f"{masters} t={t}, tau={t_to_tau(t)}, beta={t_to_beta(t)}{', '.join(f'{o}={v}' for o,v in options.items())}")
 
     for n in masters:
         if (
             (not "keep_problematic" in options)
             and
-            (tt in (problematic_with_theta if options.get("use_theta", False) else problematic)[n])
+            (t in (problematic_with_theta if options.get("use_theta", False) else problematic)[n])
             ):
-            clogger.info(f"Skipping problematic t value for E{n}: {tt}")
+            clogger.info(f"Skipping problematic t value for E{n}: {t}")
             continue
 
         values = []
         for method in methods:
-            # if n in (1,2,3) and method in {
-            #     Method.DOUBLE_BESSEL,
-            #     # Method.TSIL,
-            #     # Method.KALMAN
-            #     }:
-            #     continue
-            # if n in (5,6) and method not in {
-            #     # Method.DOUBLE_BESSEL,
-            #     Method.EISENSTEIN,
-            #     # Method.POISSON,
-            #     Method.SECDEC,
-            #     Method.AMFLOW,
-            #     Method.EXPANSION_0
-            #     }:
-            #     continue
-
-            if is_real(tt) and tt.real > threshold[n]:
-                t = tt + 1j*epsilon * (-1 if options.get("below_cut", False) else +1)
-            else:
-                t = tt
 
             if d_logt := options.get('d_logt', 0):
                 prefix = f"(d/dlogt){f'^{d_logt}' if d_logt > 1 else ''} "
             else:
                 prefix = ""
 
-            if n < 4:
-                values.append((f"{prefix}E{n}_2d,{method.value}", E_2d(n, t=t, method=method, **options)))
+            if n >= 4 or "bar" in options:
+                Efun, Ename = Ebar, f"{prefix}E{n}bar"
             else:
-                values.append((f"{prefix}E{n}bar,{method.value}", Ebar(n, t=t, method=method, **options)))
+                Efun, Ename = E_2d, f"{prefix}E{n}_2d"
 
-        def highlight(string, val):
-            if QuadError.is_imprecise(val):
-                return f"{ColorFormatter.BRIGHTCOLOR%ColorFormatter.BLACK}{string}{ColorFormatter.RESET}"
+            if over_theta:
+                var = theta_to_tau(tt)
+                values.append((f"{Ename},{method.value}", Efun(n, tau=var, method=method, **options)))
             else:
-                return f"{ColorFormatter.BOLD}{ColorFormatter.COLOR%ColorFormatter.WHITE}{string}{ColorFormatter.RESET}"
+                if is_real(t) and t.real > threshold[n] and method.needs_i_epsilon():
+                    var = t + 1j*mp_eps() * (-1 if options.get("below_cut", False) else +1)
+                else:
+                    var = t
+                values.append((f"{Ename},{method.value}", Efun(n, t=var, method=method, **options)))
 
         print()
-        for expr,val in values:
-            print(highlight(f"{expr} = {val}", val))
+        for i, (expr,val) in enumerate(values):
+            print(QuadError.highlight(val,
+                                      prefix=f"{expr} = ",
+                                      reference=((values[0][1] if i else True) if options.get("compare", False) else False)))
     print()
 
 def print_data_point(t, out):
@@ -126,7 +118,10 @@ def print_data_point(t, out):
     rtsun = r_map(tsun)
     tau = t_to_tau(t)
     q = exp(2j*pi*tau)
-    print('\t'.join(f"{float(x):.5f}" for x in (t.real, t.imag, tsun.real, tsun.imag, rtsun.real, rtsun.imag, tau.real, tau.imag, q.real, q.imag)), file=out)
+    print('\t'.join(f"{x}" for x in (t.real, t.imag, tsun.real, tsun.imag, rtsun.real, rtsun.imag, tau.real, tau.imag, q.real, q.imag)), file=out)
+
+def err_log_header():
+    return TAB.join(("t", "boundary", "Irat", "IJ", "IJstar", "IJcont", "IE", "IEstar", "IEcont"))
 
 def print_data_header(out):
     print('\t'.join(("Re(t)", "Im(t)", "Re(tsun)", "Im(tsun)", "Re(rtsun)", "Im(rtsun)", "Re(tau)", "Im(tau)", "Re(q)", "Im(q)")), file=out)
@@ -134,7 +129,7 @@ def print_data_header(out):
 def plot_Jbub_data(t_min,t_max,t_res, ns):
     for n in ns:
         clogger.info(f"Plotting Jbub{n}/{n}!...")
-        with open(f"plots/Jbub{n}.dat", 'w') as out:
+        with open(f"{plot_dir()}/Jbub{n}.dat", 'w') as out:
             print('\t'.join(("t", f"ReJ{n}", f"ImJ{n}")), file=out)
             clogger.debug(f"Plotting Jbub{n}...")
 
@@ -147,91 +142,111 @@ def plot_Jbub_data(t_min,t_max,t_res, ns):
                 if t < 4:
                     beta = t_to_beta(t)
                 else:
-                    beta = t_to_beta(t+epsilon)
+                    beta = t_to_beta(t+mp_eps())
 
                 J = Jbub(n, beta) / factorial(n)
 
                 print('\t'.join(str(x) for x in (t, J.real, J.imag)), file=out)
                 clogger.debug(f"{t}: {J}")
 
-def _quotient(num, den):
-    return num/den if den != 0 else 0 if num == 0 else float('nan')
+def _quotient(num, den, where=""):
+    if QuadError.decay(den) != 0:
+        return num/den
+
+    # clogger.debug(f"Elided division by zero{f' ({where})' if where else ''}: {num} / {den}")
+
+    if QuadError.decay(num) == 0:
+        return 0
+    else:
+        return 1
 
 def _complex_val(value):
     val, _ = QuadError.val_err(value)
-    return complex(val.real, val.imag)
+    return mpc(val.real, val.imag)
 def _complex_abs(value):
     _, err = QuadError.val_err(value)
-    return complex(abs(err.real), abs(err.imag))
+    return mpc(abs(err.real), abs(err.imag))
 def _complex_rel(value):
     val, err = QuadError.val_err(value)
-    return complex(
+    return mpc(
         abs(_quotient(err.real, val.real)),
         abs(_quotient(err.imag, val.imag))
         )
 def _complex_min(value):
     val, err = QuadError.val_err(value)
-    return complex(val.real - abs(err.real), val.imag - abs(err.imag))
+    return mpc(val.real - abs(err.real), val.imag - abs(err.imag))
 def _complex_max(value):
     val, err = QuadError.val_err(value)
-    return complex(val.real + abs(err.real), val.imag + abs(err.imag))
+    return mpc(val.real + abs(err.real), val.imag + abs(err.imag))
 
-
-def plot_E_data(t_min,t_max,t_res, ns, methods, **options):
+@log_errors
+def plot_E_data(t_min,t_max,t_res, ns, methods, err_log=False, **options):
 
     reference = {}
+    use_theta = options.get("use_theta", False)
+    over_theta = options.get("theta_point", False)
 
-    for meth in methods:
-        for n in ns:
+    header = f'''{
+            TAB.join(f"{norm}{err}{reim}"
+                    for norm,reim,err in product(
+                        ("", "Norm"),
+                        ("Re", "Im", "ReX"),
+                        ("", "Abs", "Rel", "Min", "Max")
+                        )
+                    )
+        }{TAB}{"Time"}'''
+
+    for n in ns:
+        for meth in methods:
             E_func = E_2d if n < 4 else Ebar
 
-            with open(f"plots/E{n}{meth.value}.dat", 'w') as out:
-                header = f'''{
-                        TAB.join(f"{norm}{err}{reim}"
-                                for reim,err in product(
-                                    ("", "Norm"),
-                                    ("Re", "Im", "ReX"),
-                                    ("", "Abs", "Rel", "Min", "Max")
-                                    )
-                                )
-                    }{TAB}{"Time"}'''
-
+            with (
+                open(plot_filename(f"E{n}", meth, **options), 'w') as out,
+                (open(plot_filename(f"E{n}", meth, "_err", **options), 'w') if err_log else nullcontext()) as err
+                ):
 
                 print(f"t{TAB}{header}", file=out)
+                if err:
+                    print(err_log_header(), file=err)
+
                 clogger.info(f"Plotting E{n} ({meth.value})...")
 
-                problem_points = (problematic_with_theta if options.get("use_theta", False) else problematic)[n]
+                problem_points = (problematic_with_theta if use_theta else problematic)[n]
 
-                for t in plot_linspace(t_min, t_max, t_res, refine_pts=problem_points, refine_lvl=5):
+                for tt in plot_linspace(t_min, t_max, t_res, refine_pts=problem_points, over_theta=over_theta):
 
-                    if t > threshold[n]:
-                        var = t + 1j*epsilon
+                    if tt in problem_points:
+                        clogger.debug(f"Skipping problematic t value for E{n}: {tt}")
+                        print('', file=out)
+                        continue
+
+                    if n > 4 or options.get("bar", False):
+                        Efun = Ebar
                     else:
-                        var = t
+                        Efun = E_2d
 
-                    clogger.debug(f"Plotting t = {var}")
+                    if over_theta:
+                        tau = theta_to_tau(tt)
+                        t = tau_to_t(tau)
+                        clogger.debug(f"Plotting θ = {tt} (t = {t})")
 
-                    if t in problem_points:
-                        if t == threshold[n]:
-                            # If threshold is problematic, it is actually a singularity and should be skipped
-                            clogger.debug(f"Skipping problematic t value for E{n}: {t}")
-                            print('', file=out)
-                            continue
+                        result = timed(E_func)(n, t=t, tau=tau, method=meth, err_log=err, **options)
+                    else:
+                        if tt > threshold[n] and meth.needs_i_epsilon():
+                            t = tt + 1j*mp_eps() * (-1 if options.get("below_cut", False) else +1)
                         else:
-                            # Otherwise, dodge the removable singularity
-                            clogger.debug(f"Avoiding problematic t value for E{n}: {t}")
-                            var -= 1/(2*t_res)
+                            t = tt
+                        clogger.debug(f"Plotting t = {t}")
+                        result = timed(E_func)(n, t=t, method=meth, err_log=err, **options)
 
-                    result = timed(E_func)(n, t=var, method=meth, **options)
                     value, time = result
 
-
                     if meth == methods[0]:
-                        reference[t] = value.value()
+                        reference[(n,tt)] = value.value()
 
                     norm_value = (
-                        +    (_quotient(value.real, reference[t].real) - 1.)
-                        + 1j*(_quotient(value.imag, reference[t].imag) - 1.)
+                        +    (_quotient(value.real, reference[(n,tt)].real, f'{tt},re') - 1.)
+                        + 1j*(_quotient(value.imag, reference[(n,tt)].imag, f'{tt},im') - 1.)
                         )
 
                     clogger.debug(f"values:{NL} > {value}")
@@ -242,16 +257,16 @@ def plot_E_data(t_min,t_max,t_res, ns, methods, **options):
                             TAB.join(str(Re(err(reim(norm))))
                                 for norm,reim,err in product(
                                     (value, norm_value),
-                                    (lambda x: x.real, lambda x: x.imag, lambda x: x.real.add_error(x.imag) if t < threshold[n] else x.real),
+                                    (lambda x: x.real, lambda x: x.imag, lambda x: x.real.add_error(x.imag) if tt < threshold[n] else x.real),
                                     (lambda x: x.value(), _complex_abs, _complex_rel, _complex_min, _complex_max)
                                     )
                                 )
                         }{TAB}{time}'''
 
-                    print(f"{var.real}{TAB}{line}", file=out)
+                    print(f"{t.real}{TAB}{line}", file=out)
 
                 clogger.info(f"Wrote {out.name}")
-                clogger.debug(f"Columns are {header.replace('\t', ', ')}")
+    clogger.debug(f"Columns are {header.replace('\t', ', ')}")
 
 
 def plot_Pi_data(t_min,t_max,t_res, methods, **options):
@@ -292,7 +307,7 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
     for JEZ in 'JEZ':
         terms0 = PiJEZ(JEZ, ctx.but(method=Method.EXPANSION_0))
 
-        with open(f"plots/Pi{JEZ}.dat", 'w') as out:
+        with open(f"{plot_dir()}/Pi{JEZ}.dat", 'w') as out:
             header = f'''{
                     TAB.join(f"{meth.value}{err}{reim}Pi{JEZ}{term}"
                             for meth,reim,err,term in product(
@@ -311,19 +326,17 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
 
             for t in plot_linspace(t_min, t_max, t_res, refine_pts=[0,4,16], refine_lvl=5):
 
-                if t > 4:
-                    var = t + 1j*epsilon
-                else:
-                    var = t
-
-                clogger.debug(f"Plotting t = {var}")
+                clogger.debug(f"Plotting t = {t}")
 
                 if t in {0,4,16}:
                     clogger.debug(f"Skipping problematic t value for Pi{JEZ}: {t}")
                     print('', file=out)
                     continue
 
-                results = [timed(PiJEZ)(JEZ, ctx.but(t=var, method=meth)) for meth in methods]
+                    if tt > 4 and meth.needs_i_epsilon():
+                        t += 1j*mp_eps() * (-1 if options.get("below_cut", False) else +1)
+
+                results = [timed(PiJEZ)(JEZ, ctx.but(t=t, method=meth)) for meth in methods]
                 values = [val for val,_ in results]
                 times = [time for _,time in results]
 
@@ -331,22 +344,6 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
                     return num/den if den != 0 else 0 if num == 0 else float('nan')
 
                 clogger.debug(f"values:{NL}{NL.join(f' > {v['']}' for v in values)}")
-
-                def _complex_abs(value):
-                    _, err = QuadError.val_err(value)
-                    return complex(abs(err.real), abs(err.imag))
-                def _complex_rel(value):
-                    val, err = QuadError.val_err(value)
-                    return complex(
-                        abs(_quotient(err.real, val.real)),
-                        abs(_quotient(err.imag, val.imag))
-                        )
-                def _complex_min(value):
-                    val, err = QuadError.val_err(value)
-                    return complex(val.real - abs(err.real), val.imag - abs(err.imag))
-                def _complex_max(value):
-                    val, err = QuadError.val_err(value)
-                    return complex(val.real + abs(err.real), val.imag + abs(err.imag))
 
                 # Note the parallellism with how the header is constructed!
                 line = f'''{
@@ -362,13 +359,13 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
                         TAB.join(str(times[meth]) for meth in range(len(methods)))
                     }'''
 
-                print(f"{var.real}{TAB}{line}", file=out)
+                print(f"{t.real}{TAB}{line}", file=out)
 
         clogger.info(f"Wrote {out.name}")
-        clogger.debug(f"Columns are {header.replace('\t', ', ')}")
+    clogger.debug(f"Columns are {header.replace('\t', ', ')}")
 
 def plot_theta_data(t_min,t_max,t_res, tol=1e-9):
-    with open(f"plots/theta.dat", 'w') as out:
+    with open(f"{plot_dir()}/theta.dat", 'w') as out:
         print('\t'.join(("t", "theta", "err")), file=out)
         for t in plot_linspace(t_min, t_max, t_res):
             theta = t_to_theta(t, tol)
@@ -379,7 +376,7 @@ def plot_theta_t_err(t_min, t_max, theta_res, **options):
     theta_min = t_to_theta(t_min, error=False)
     theta_max = t_to_theta(t_max, error=False)
 
-    with open(f"plots/theta_t_err.dat", 'w') as out:
+    with open(f"{plot_dir()}/theta_t_err.dat", 'w') as out:
         print('\t'.join(("theta", "Retau", "Imtau", "Ret", "AbsImt", "eRet", "eAbsImt", "eReErrt", "eImErrt")), file=out)
         for theta in plot_linspace(theta_min, theta_max, theta_res):
             if theta == 0:
@@ -394,6 +391,7 @@ def plot_theta_t_err(t_min, t_max, theta_res, **options):
             except ValueError:
                 et = det = mpc('nan', 'nan')
             print('\t'.join(str(x) for x in (theta, tau.real, tau.imag, t.real, abs(t.imag), et.real, abs(et.imag), abs(det.real), abs(det.imag))), file=out)
+        clogger.info(f"Wrote {out.name}")
 
 
 def plot_t_tau_t_err(t_min, t_max, t_res, **options):
@@ -401,7 +399,7 @@ def plot_t_tau_t_err(t_min, t_max, t_res, **options):
 
     imsize = abs(t_max - t_min)/2
 
-    with open(f"plots/t_tau_t_err.dat", 'w') as out:
+    with open(f"{plot_dir()}/t_tau_t_err.dat", 'w') as out:
         print('\t'.join(("Ret", "Imt", "Retau", "Imtau", "ReErr", "ImErr", "AbsErr", "ArgErr")), file=out)
         for Re_t in plot_linspace(t_min, t_max, t_res):
             for Im_t in plot_linspace(-imsize, +imsize, t_res):
@@ -420,6 +418,7 @@ def plot_t_tau_t_err(t_min, t_max, t_res, **options):
 
                 print('\t'.join(str(x) for x in (t.real, t.imag, tau.real, tau.imag, err.real, err.imag, abs(err), atan2(err.imag, err.real))), file=out)
             print('', file=out)
+        clogger.info(f"Wrote {out.name}")
 
 def all_about_tau_header():
     return [
@@ -465,7 +464,7 @@ def plot_tau_t_tau_err(_, tau_max, tau_res, **options):
 
     eps = .5/tau_res
 
-    with open(f"plots/tau_t_tau_err.dat", 'w') as out:
+    with open(f"{plot_dir()}/tau_t_tau_err.dat", 'w') as out:
         print('\t'.join(all_about_tau_header() + ['ReErr', 'ImErr', 'AbsErr', 'ArgErr']), file=out)
         for Im_tau in plot_linspace(0.+eps, tau_max, tau_res * .5/tau_max):
             for Re_tau in plot_linspace(0.+eps, .5-eps, tau_res):
@@ -487,11 +486,13 @@ def plot_tau_t_tau_err(_, tau_max, tau_res, **options):
                         err = mpc('nan', 'nan')
                 print('\t'.join(str(x) for x in data + [err.real, err.imag, abs(err), atan2(err.imag, err.real)]), file=out)
             print('', file=out)
+        clogger.info(f"Wrote {out.name}")
+    clogger.debug(f"Columns are {all_about_tau_header.replace('\t', ', ')}")
 
 def plot_t_tau_images(Re_min, Re_max, Re_res, Ims, **options):
 
     for Im_t in Ims:
-        with open(f"plots/image_Imt{Im_t.real}.dat", 'w') as out:
+        with open(f"{plot_dir()}/image_Imt{Im_t.real}.dat", 'w') as out:
             print('\t'.join(all_about_tau_header()), file=out)
             for Re_t in plot_linspace(Re_min, Re_max, Re_res, [0,4,16], refine_lvl=10):
                 if Re_t == 10: # Avoid the exact transition for rho2 since there is roundoff error
@@ -504,20 +505,58 @@ def plot_t_tau_images(Re_min, Re_max, Re_res, Ims, **options):
                 data[3] = Im_t.realq
 
                 print('\t'.join(str(x) for x in data), file=out)
+            clogger.info(f"Wrote {out.name}")
+    clogger.debug(f"Columns are {all_about_tau_header.replace('\t', ', ')}")
 
 def plot_hybrid_err(log_xover_min, log_xover_max, log_xover_res, points, **options):
     from .integration import hybrid_error_log_header
 
+
     for point in points:
-        with open(f"plots/hybrid_err_t{point.real}.dat", 'w') as out:
+        filename = f"{plot_dir()}/hybrid_err_t{point.real}"
+        with open(f"{filename}.dat", 'w') as out:
             print(hybrid_error_log_header(), file=out)
-            for log_xover in plot_linspace(log_xover_min, log_xover_max, log_xover_res):
-                xover = 10**log_xover
+            for log_xover in plot_linspace(max(log_xover_min, log(t_to_beta(point), 10)), log_xover_max, log_xover_res):
+                xover = 10**Re(log_xover)
                 clogger.debug(f"t={point}, chi={xover}")
                 Ebar(5, t=point,
                      hybrid_error_log=out,
                      SJ_xover=xover, E1h2_xover=xover, Hreg_xover=xover,
                      **options)
+            clogger.info(f"Wrote {out.name}")
+
+        with open(f"{filename}_ref.dat", 'w') as out:
+            Ebar(5, t=point,
+                hybrid_error_log=out,
+                adaptive_xover=True,
+                **options)
+            clogger.info(f"Wrote {out.name} (temporary file)")
+
+        with open(f"{filename}_ref.dat", 'r') as ref:
+            reference = {}
+            for line in ref:
+                cols = line.strip().split('\t')
+                reference[cols[0]] = mpf(cols[2])
+        outfile = {}
+        with (
+            open(f"{filename}.dat", 'r') as infile,
+            open(f"{filename}_SJ1.dat", 'w') as outfile["SJ1"],
+            open(f"{filename}_SJ2.dat", 'w') as outfile["SJ2"],
+            open(f"{filename}_Hreg.dat", 'w') as outfile["Hreg"],
+            open(f"{filename}_E1h2.dat", 'w') as outfile["E1h2"]
+            ):
+            for line in infile:
+                cols = line.strip().split('\t')
+                key = cols[0]
+                if key == "source":
+                    for key in ("SJ1", "SJ2", "Hreg", "E1h2"):
+                        print(f"{cols[1]}{TAB}reldiff{TAB}{TAB.join(cols[2:])}", file=outfile[key])
+                else:
+                    print(f"{cols[1]}{TAB}{mpf(cols[2])/reference[key] - 1}{TAB}{TAB.join(cols[2:])}", file=outfile[key])
+            for out in outfile.values():
+                clogger.info(f"Wrote {out.name}")
+
+    clogger.debug(f"Columns are {hybrid_error_log_header().replace('\t', ', ')}")
 
 def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
 
@@ -532,14 +571,14 @@ def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
             case _:
                 raise NotImplementedError(f"Not implemented: diffeq for E{n}")
 
+        header = f"t{TAB}" + TAB.join((f'{reim}{err}{val}'
+            for reim,err,val in product(
+                ("Re", "Im"),
+                ("", "Abs", "Rel", "Min", "Max"),
+                ["Res"] + [f'D{d}' for d in range(order+1)]
+            )))
         for meth in methods:
-            with open(f"plots/diffeqE{n}{meth.value}.dat", 'w') as out:
-                header = f"t{TAB}" + TAB.join((f'{reim}{err}{val}'
-                    for reim,err,val in product(
-                        ("Re", "Im"),
-                        ("", "Abs", "Rel", "Min", "Max"),
-                        ["Res"] + [f'D{d}' for d in range(order+1)]
-                    )))
+            with open(f"{plot_dir()}/diffeqE{n}{meth.value}.dat", 'w') as out:
                 print(header, file=out)
 
                 clogger.info(f"Evaluating diffeq for E{n} ({meth.value})...")
@@ -548,7 +587,7 @@ def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
                 for tt in plot_linspace(t_min, t_max, t_res, refine_pts=problem_points, refine_lvl=5):
 
                     if is_real(tt) and tt.real > threshold[n]:
-                        t = tt + 1j*epsilon * (-1 if options.get("below_cut", False) else +1)
+                        t = tt + 1j*mp_eps() * (-1 if options.get("below_cut", False) else +1)
                     else:
                         t = tt
 
@@ -578,10 +617,10 @@ def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
                                 ctx.cache[(1,d)] = E_2d(1, ctx, d_logt=d)
 
                             res = (
-                                + ctx.cache[(1,3)] * (64*t**2 - 20*t**3 + t**4)
-                                + ctx.cache[(1,2)] * (192*t - 90*t**2 + 6*t**3)
-                                + ctx.cache[(1,1)] * (64 - 68*t + 7*t**2)
-                                + ctx.cache[(1,0)] * (-4 + t)
+                                + ctx.cache[(1,3)] * (t-16)*(t-4)*t**2
+                                + ctx.cache[(1,2)] * 6*t*(t**2 - 15*t + 32)
+                                + ctx.cache[(1,1)] * (7*t**2 - 68*t + 64)
+                                + ctx.cache[(1,0)] * (t - 4)
                                 - 24)
 
                         case 5:
@@ -605,7 +644,7 @@ def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
                     prev_tt = tt;
 
             clogger.info(f"Wrote {out.name}")
-            clogger.debug(f"Columns are {header.replace('\t', ', ')}")
+    clogger.debug(f"Columns are {header.replace('\t', ', ')}")
 
 # DEPRECATED everything below here
 
@@ -613,7 +652,7 @@ def plot_diffeq(t_min, t_max, t_res, ns, methods, **options):
 def plot_t_tau_data(eps, tmin=-17.7355421803587, tmax=29.8564064605510, npoints=256, refine=0, refine_radius=.1, filename=None):
     # print(f"tmin={tmin}, tmax={tmax}")
     if not filename:
-        filename = f"plots/eps{eps:.5f}.dat"
+        filename = f"{plot_dir()}/eps{eps:.5f}.dat"
     with open(filename, 'w') as out:
         print_data_header(out)
 
@@ -631,7 +670,7 @@ def plot_t_tau_data(eps, tmin=-17.7355421803587, tmax=29.8564064605510, npoints=
 
 def plot_bridge_data(t, spacelike=False, eps=1e-6, npoints=256, filename=None):
     if not filename:
-        filename = f"plots/t{t:.5f}_{'s' if spacelike else 't'}bridge.dat"
+        filename = f"{plot_dir()}/t{t:.5f}_{'s' if spacelike else 't'}bridge.dat"
     with open(filename, 'w') as out:
         print_data_header(out)
         t += 1j*eps
@@ -654,7 +693,7 @@ def plot_bridge_data(t, spacelike=False, eps=1e-6, npoints=256, filename=None):
 
 def plot_t0_data(t=-1, scale=.9, steps=100, eps=1e-6, filename=None):
     if not filename:
-        filename = f"plots/t0.dat"
+        filename = f"{plot_dir()}/t0.dat"
 
     with open(filename, 'w') as out:
         print('\t'.join(("t", "tau", "b", "l", "e", "p")), file=out, end='')
