@@ -1,11 +1,12 @@
 
-from mpmath import inf, pi
+from mpmath import inf, nan, pi
 from mpmath import exp, log, polylog, sin, cos
 
 from .elliptics import *
 from .integration import *
 from .series_expansion import *
 from .utilities import *
+from .points import threshold
 
 from .t_tau_beta import t_to_tau, t_to_beta, tau_to_t, tau_to_beta, beta_to_t, beta_to_tau
 from .theta import *
@@ -24,18 +25,18 @@ def Dq_varpi_1(q, *, d_logq=0):
     return (0 if d_logq else 1) + 2*eisen(1,1, q, psi_varpi, d_logq=d_logq+1)
 
 # Elliptic polylog as defined in Bloch, Kerr & Vanhove
-def Li_elliptic(r, q,logq, z):
+def Li_elliptic(r, q,logq, z,logz):
     Li = polylog
     match r:
         case 3:
             return (Li(3,z)
                     + QuadError.from_nsum(lambda n: Li(3,q**n*z) + Li(3,q**n/z), (1,inf))
-                    + log(z)**3/12 - logq*log(z)**2/24 + logq**3/720
+                    + logz**3/12 - logq*logz**2/24 + logq**3/720
                     )
         case 2:
             return (
                     + QuadError.from_nsum(lambda n: n*(Li(2,q**n*z) + Li(2,q**n/z)), (1,inf))
-                    - log(z)**2/24 + logq**2/240
+                    - logz**2/24 + logq**2/240
                     )
         case 1:
             return (
@@ -45,7 +46,7 @@ def Li_elliptic(r, q,logq, z):
         case 0:
             return (
                     + QuadError.from_nsum(lambda n: n**3*(Li(0,q**n*z) + Li(0,q**n/z)), (1,inf))
-                    + 1/120
+                    + 1/mpf(120)
                     )
         case _:
             raise NotImplementedError(f"Elliptic polylogarithm of weight {r} not implemented")
@@ -54,12 +55,13 @@ def Li_elliptic(r, q,logq, z):
 def H_bball(r, q,logq, ctx):
     match ctx.method:
         case Method.ELLIPTIC:
-            zeta6 = exp(1j*pi/3)
+            logzeta6 = 1j*pi/3
+            zeta6 = exp(logzeta6)
             return (
-                + 24*Li_elliptic(r, q,logq, zeta6   )
-                + 21*Li_elliptic(r, q,logq, zeta6**2)
-                +  8*Li_elliptic(r, q,logq, zeta6**3)
-                +  7*Li_elliptic(r, q,logq, 1       )
+                + 24*Li_elliptic(r, q,logq, zeta6   ,   logzeta6)
+                + 21*Li_elliptic(r, q,logq, zeta6**2, 2*logzeta6)
+                +  8*Li_elliptic(r, q,logq, zeta6**3, 3*logzeta6)
+                +  7*Li_elliptic(r, q,logq, 1       , 0)
                 )
 
         case Method.EISENSTEIN:
@@ -67,10 +69,8 @@ def H_bball(r, q,logq, ctx):
                 case 3:
                     return logq**3/12 + 5*pi**2*logq/6 - zeta(3)/3 + eisen(3,1, q, psi_bball)
                 case 2:
-                    # return logq**2/4 + 5*pi**2/6 + eisen(2,2, q, psi_bball)
                     return logq**2/4 + 5*pi**2/6 + eisen(3,1, q, psi_bball, d_logq=1)
                 case 1:
-                    # return logq/2 + eisen(1,3, q, psi_bball) - eisen(1,2, q, psi_bball)
                     return logq/2 + eisen(3,1, q, psi_bball, d_logq=2)
                 case 0:
                     return 1/2 + eisen(3,1, q, psi_bball, d_logq=3)
@@ -82,15 +82,17 @@ def H_bball(r, q,logq, ctx):
 
 # The "H-block" is the parenthesized quantity containing H_bball
 # which is common to the elliptic, Eisenstein and Poisson formulations.
+# H_block(3-r') = (d/dlogq)^r' H_block(3).
 def H_block(r, q,logq, ctx):
 
     if ctx.method == Method.POISSON:
         tau = ctx.tau
 
+        # poisson_sum(3-r') = (d/dtau)^r' poisson_sum(3)
         def poisson_sum(r):
+            x = exp(-1j*pi/(3*tau))
             def summand(n):
-                x = exp(-1j*pi*int(n)/(3*tau))
-                return int(n)**(3-r) * polylog(r, x) * sum(psi_bball[i] * cos(pi*n*(i+1)/3) for i in range(6))
+                return n**(3-r) * polylog(r, x**n) * sum(psi_bball[i] * cos(pi*n*(i+1)/3) for i in range(6))
             return QuadError.from_nsum(summand, [1,inf], method='alternating')
 
         match r:
@@ -100,49 +102,29 @@ def H_block(r, q,logq, ctx):
                     - 336*zeta(3)
                     )
             case 2:
-                return tau * (
-                    2 * (
+                return (
+                    - 8j*pi/3 * poisson_sum(2)
+                    + 2*tau * (
                         - 8*poisson_sum(3)
                         - 336*zeta(3)
-                        )
-                    - 1j*pi/3 * (
-                        - 8*poisson_sum(2)
                         )
                     ) / (2j*pi)
             case 1:
                 return (
-                        (
-                            2 * (
-                                - 8*poisson_sum(3)
-                                - 336*zeta(3)
-                                )
-                            # - 1j*pi/3 * (
-                            #     - 8*poisson_sum(2)
-                            #     )
-                            )
-                        - 1j*pi/3 * (
-                            2*2 * ( # <- times two by absorbing omitted term above
-                                - 8*poisson_sum(2)
-                                )
-                            - 1j*pi/3 * (
-                                - 8*poisson_sum(1)
-                                )
-                            )
+                    + 8*pi**2/(9*tau**2) * poisson_sum(1)
+                    - 16j*pi/(3*tau) * poisson_sum(2)
+                    + 2 * (
+                        - 8*poisson_sum(3)
+                        - 336*zeta(3)
+                        )
                     ) / (2j*pi)**2
 
             case 0:
-                return -1j*pi/(3*tau) * (
-                        2 * (
-                            -8*poisson_sum(2)
-                            )
-                        - 1j*pi/3 * (
-                            2*2 * (
-                                - 8*poisson_sum(1)
-                                )
-                            - 1j*pi/3 * (
-                                - 8*poisson_sum(0)
-                                )
-                            )
+                # Astoundingly simple!
+                # A possible approach for verifying satisfaction of the diffeq
+                #  through more elementary means?
+                return (
+                    + 8j*pi**3/(27*tau**4) * poisson_sum(0)
                     ) / (2j*pi)**3
 
             case _:
@@ -157,7 +139,7 @@ def H_block(r, q,logq, ctx):
             case 1:
                 return -48*H_bball(1, q,logq, ctx)
             case 0:
-                return -48*H_bball(1, q,logq, ctx)
+                return -48*H_bball(0, q,logq, ctx)
             case _:
                 raise NotImplementedError(f"H-block of weight {r} not implemented")
 
@@ -169,7 +151,23 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
 
     ctx = context if context else IntegrationContext(t,tau,beta, method=method, **options)
 
-    if (n, d_logt) in ctx.cache:
+    # Implement imaginary_error
+    if ctx.imaginary_error and (is_real(ctx.t) and Re(ctx.t) < threshold[n]):
+        result = E_2d(n, ctx.but(imaginary_error=False), d_logt=d_logt)
+        result.add_error(result.imag)
+        return result.real
+    # Implement timeout
+    if ctx.timeout:
+        return timeout(int(ctx.timeout), nan)(E_2d)(n, ctx.but(timeout=False), d_logt=d_logt)
+
+    # Peek values indicative of zero
+    if ctx._t == 0 or ctx._tau == 0 or ctx._beta == inf:
+        return E_2d_series(n)[0]
+
+    if ctx.subtract_0 and not d_logt: # zero value vanishes under d_logt
+        return E_2d(n, ctx.but(subtract_0=False), d_logt=d_logt) - E_2d_series(n)[0]
+
+    if (n, d_logt) in ctx.cache and not ctx.no_cached:
         return ctx.cache[(n, d_logt)];
 
     # Some derivatives computed via IBP, selected with IBP_derivs
@@ -191,11 +189,14 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
                     )/((t - 16)*(t - 4))
             # Fallthrough otherwise
 
+    if d_logt and method.needs_IBP_derivs():
+        if not ctx.IBP_derivs: # Try to use the hardcoded IBP derivatives
+            return E_2d(n, ctx.but(IBP_derivs=True))
+        raise NotImplementedError(f"Not implemented: t-derivatives with {ctx.method}")
+
     match ctx.method:
         # double bessel only differs from bessel for E5,E6 purposes
         case Method.BESSEL | Method.DOUBLE_BESSEL:
-            if d_logt:
-                raise NotImplementedError(f"Not implemented: t-derivatives with Bessel")
             if not is_real(ctx.t) or Re(ctx.t) >= 16:
                 return float('nan')
             return QuadError.from_quad(lambda x: bessel_integrand(n, ctx.t,x, d_logt), [(0,inf)])
@@ -228,7 +229,7 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
                     Dq2w = Dq_varpi_1(q, d_logq=1)
                     Dq2t = Dq_t(q, d_logq=1)
                     E1 = E_2d(1, ctx)
-                    dE1 = E_2d(1, ctx, d_logq=1)
+                    dE1 = E_2d(1, ctx, d_logt=1)
 
                     return (
                         + (2*Dqw/Dqt - Dq2t/Dqt**2) * dE1
@@ -238,7 +239,7 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
                             ) / Dqt**2
                         )
 
-                case (1,3):
+                case (1,3): # FIXME
 
                     Dqw = Dq_varpi_1(q)
                     Dqt = Dq_t(q)
@@ -247,8 +248,8 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
                     Dq3w = Dq_varpi_1(q, d_logq=2)
                     Dq3t = Dq_t(q, d_logq=2)
                     E1 = E_2d(1, ctx)
-                    dE1 = E_2d(1, ctx, d_logq=1)
-                    d2E1 = E_2d(1, ctx, d_logq=2)
+                    dE1 = E_2d(1, ctx, d_logt=1)
+                    d2E1 = E_2d(1, ctx, d_logt=2)
 
                     return (
                         + (3*Dqw/Dqt - 3*Dq2w/Dqt**2) * d2E1
@@ -312,36 +313,32 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
             # Only import if needed
             from .psd_wrapper import pySecDec, nu_master
 
-            if d_logt:
-                if not ctx.IBP_derivs: # Fallback
-                    return E_2d(n, ctx.but(IBP_derivs=True))
-                raise NotImplementedError(f"Not implemented: t-derivatives with pySecDec")
-
-            # NOTE: overall sign due to convention difference
-            with pySecDec(nu_master[n], dim="2-2*eps", **ctx.options) as integral:
-                return -QuadError(*integral(t=ctx.t)[0])
+            with pySecDec(n, dim="2-2*eps", **ctx.options) as integral:
+                return integral(t=Re(ctx.t, strict=True))[0] # Imaginary t is broken in pySecDec
 
         case Method.AMFLOW:
             # Only import if needed
             from .amflow_wrapper import AMFlow, nu_master
 
-            if d_logt:
-                if not ctx.IBP_derivs: # Fallback
-                    return E_2d(n, ctx.but(IBP_derivs=True))
-                raise NotImplementedError(f"Not implemented: t-derivatives with AMFlow")
+            with AMFlow(n, dim="2", **ctx.options) as integral:
+                return integral(t=ctx.t)[0]
 
-            with AMFlow(nu_master[n], dim="2", **ctx.options) as integral:
+        case Method.FEYNTROP:
+            # Only import if needed
+            from .feyntrop_wrapper import FeynTrop
+
+            with FeynTrop(n, dim=2, **ctx.options) as integral:
                 return integral(t=ctx.t)[0]
 
         case Method.EXPANSION_0:
             try:
-                return evaluate_series(E_2d_series[n], var=ctx.t, log_deriv=d_logt, error=+1)
+                return evaluate_series(E_2d_series(n), var=ctx.t, log_deriv=d_logt, error=+1, max_order=ctx.max_series_order)
             except IndexError:
                 raise NotImplementedError(f"Not implemented: E{n} in 2d expanded around t=0")
 
         case Method.EXPANSION_INF:
             try:
-                return evaluate_series(E_2d_series_inf[n], var=ctx.t, log_var=log(-ctx.t), log_deriv=d_logt, error=-1)
+                return evaluate_series(E_2d_series_inf[n], var=ctx.t, log_var=log(-ctx.t), log_deriv=d_logt, error=-1, max_order=ctx.max_series_order)
             except IndexError:
                 raise NotImplementedError(f"Not implemented: E{n} in 2d expanded around t=∞")
 
