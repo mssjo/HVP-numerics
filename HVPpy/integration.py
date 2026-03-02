@@ -3,8 +3,9 @@ from copy import deepcopy as copy
 from math import prod
 
 import mpmath
-from mpmath import quad, quadsubdiv, quadosc, nsum, mpc
-from mpmath import sqrt, log, factorial
+from mpmath import quad, quadsubdiv, quadosc, nsum
+from mpmath import sqrt, log, factorial, ceil
+from mpmath import nstr, mpc, inf
 
 from .clogging import clogger
 from .method import Method
@@ -53,7 +54,7 @@ class IntegrationContext:
         self._beta      = beta
 
         if context is not None:
-            for opt, val in context.options.items:
+            for opt, val in context.options.items():
                 setattr(self, opt, val)
 
         for opt, val in options.items():
@@ -78,7 +79,7 @@ class IntegrationContext:
         return IntegrationContext(
             t, tau, beta,
             context=self,
-            cache = {} # Cache is invaliated so it is cleared
+            cache = {}, # Cache is invaliated so it is cleared
             **options
             )
 
@@ -86,9 +87,9 @@ class IntegrationContext:
         if attr.startswith('_'):
             raise AttributeError(f"IntegrationContext has no attribute '{attr}'")
         if type is None:
-            return getattr(self, attr, default)
+            return self.__dict__.get(attr, default)
         else:
-            return type(getattr(self, attr, default))
+            return type(self.__dict__.get(attr, default))
 
     def __getattr__(self, attr):
         """
@@ -113,7 +114,7 @@ class IntegrationContext:
                 if self._tau is None:
                     if self.use_theta and (not is_complex(self.t) or self.t.imag == 0):
                         from .theta import theta_to_tau, t_to_theta
-                        self._tau = theta_to_tau(t_to_theta(self.t, error=False))
+                        self._tau = QuadError.decay(theta_to_tau(t_to_theta(self.t)))
                     else:
                         from .t_tau_beta import t_to_tau
                         self._tau = t_to_tau(self.t)
@@ -309,7 +310,7 @@ class QuadError:
 
     def __str__(self):
         val, err = self()
-        return f"{val} ± {err}"
+        return f"{val} ± {nstr(err,3)}" # The error doesn't need much precision
     def __repr__(self):
         val, err = self()
         return f"QuadError({val}, {err})"
@@ -367,11 +368,11 @@ class QuadError:
 
         Returns the sum with the numerical tolerance as its error.
         """
-        return QuadError(nsum(summand, limits, **kwargs), kwargs.get('tol', 10**-mpmath.mp.dps))
+        return QuadError(nsum(summand, limits, **kwargs), kwargs.get('tolerance', mp_eps()))
 
     @staticmethod
     def from_quad(integrand, limits, *, subdiv=False, osc=False,
-                  estimate_integrand_error=False, **kwargs):
+                  integrand_error=False, **kwargs):
         """
         Get a QuadError from a numerically evaluated, possibly multidimentional integral.
 
@@ -390,6 +391,8 @@ class QuadError:
 
         if "method" in kwargs and isinstance(kwargs["method"], Method):
             kwargs.pop("method") # because this interferes with quad's method
+        if "quad_method" in kwargs:
+            kwargs["method"] = kwargs["quad_method"]
 
         def trim(limits):
             # quad itself is not good at reporting these errors
@@ -413,13 +416,12 @@ class QuadError:
                         *(trim(limit) for limit in limits),
                         error=True, **kwargs))
 
-        if estimate_integrand_error:
-            integrand_error = func(
-                        lambda var: QuadError.get_error(integrand(var)),
+        if integrand_error:
+            err = func( lambda var: QuadError.get_error(integrand(var)),
                         *(trim(limit) for limit in limits),
                         error=False, **kwargs)
-            clogger.debug(f"[QuadError.from_quad] integrand error (est.): {integrand_error}")
-            integral.add_error(integrand_error)
+            clogger.debug(f"[QuadError.from_quad] integrand error (est.): {err}")
+            integral.add_error(err)
 
         return integral
 
@@ -469,6 +471,131 @@ class QuadError:
             lambda z: integrand(contour_func(z)) * contour_deriv(z),
             [(arg_start, arg_end)])
 
+    def highlight(value, *, prefix="", suffix="", reference=False):
+        """
+        Highlight a value according to its precision using ANSI escapes.
+
+        Parameters:
+        value - the value, may or may not be QuadError
+        prefix - string prepended to the result
+        suffix - string appended to the result
+        reference - a value to compare against, or True to highlight this as the
+            reference for other values (default: False)
+
+        Without a reference, significant digits are printed in white
+        and non-significant ones (those falling within the error band) in gray.
+        With a reference, significant digits matching those of the reference
+        are printed in green, and those not matching it in red.
+        The reference itself has its significant digits printed in cyan.
+
+        The prefix, suffix, exponents and errors are printed in the "main" color
+        of the value:
+            green if there is at least one green digit,
+            red if all digits are red,
+            gray if no digit is significant (the error is comparable or larger
+                than the value),
+            cyan for the reference (unless gray),
+            white otherwise.
+
+        Real and complex parts are printed separately, with the prefix colored
+        according to the real part and the suffix according to the imaginary.
+        """
+        from .clogging import ColorFormatter as cf
+
+        has_ref = (reference is not True and reference is not False)
+
+        # Recurse on real and imaginary parts
+        if is_complex(value) and QuadError.decay(value.imag) != 0:
+            return f"""{
+                QuadError.highlight(value.real,
+                                    prefix=f'{prefix}(', suffix=')',
+                                    reference=(reference.real if has_ref else reference))
+                } + {
+                QuadError.highlight(value.imag,
+                                    prefix='(', suffix=f')i{suffix}',
+                                    reference=(reference.imag if has_ref else reference))
+                }"""
+
+        if has_ref and is_complex(reference):
+            ref = reference.real
+        else:
+            ref = reference
+
+        # clogger.debug(f"value: {value}, reference: {reference}")
+
+        val, err = QuadError.val_err(value)
+        val = val.real
+        err = err.real
+
+        vstr = str(val)
+        estr = f" ± {nstr(err, 3)}" if isinstance(value, QuadError) else ""
+
+        if has_ref:
+            rval, rerr = QuadError.val_err(ref)
+            rstr = str(rval)
+            err = max(abs(err), abs(rerr))
+        else:
+            err = abs(err)
+
+        # Find number of dignificant digits
+        if err != 0:
+            # All this because converting mpf to int is hard
+            sigdig = 0
+            pow10 = err
+            while pow10 < abs(val):
+                sigdig += 1
+                pow10 *= 10
+            # clogger.debug(f"{sigdig} significant digits")
+        else:
+            sigdig = len(vstr)
+            # clogger.debug(f"All digits significant")
+
+        # Compare exponents, when applicable
+        epos = vstr.find('e') if 'e' in vstr else len(vstr)
+        if has_ref:
+            repos = rstr.find('e') if 'e' in rstr else len(rstr)
+            if vstr[epos:] == rstr[repos:]:
+                # clogger.debug(f"Value has same power ({vstr[epos:]}) as reference ({rstr[repos:]})")
+                rpos = -1
+            else:
+                # clogger.debug(f"Value has different power ({vstr[epos:]}) than   reference ({rstr[repos:]})")
+                rpos = 0
+
+        # Explore string representation of value
+        spos = -1
+        ndig = 0
+        for i,c in enumerate(vstr[:epos]):
+            if not c.isdigit():
+                continue
+            if ndig or c != '0':
+                ndig += 1 # Increment digit count, excluding leading zeroes
+            if ndig > sigdig and spos < 0:
+                spos = i  # Find point where significant digits end
+                break
+            if has_ref and i < len(rstr) and c != rstr[i] and rpos < 0:
+                rpos = i  # Find point where value diverges from reference
+                if spos >= 0:
+                    break
+        if has_ref and rpos < 0:
+            rpos = epos
+        if spos < 0:
+            spos = epos
+
+        # Completely imprecise value
+        if sigdig == 0:
+            return f"{cf.BRIGHTCOLOR%cf.BLACK}{prefix}{vstr}{estr}{suffix}{cf.RESET}"
+        # Completely wrong value
+        if has_ref and rpos == 0:
+            return f"{cf.BOLD}{cf.COLOR%cf.RED}{prefix}{vstr}{estr}{suffix}{cf.RESET}"
+
+        # Normal case
+        if has_ref:
+            maincolor = cf.COLOR%cf.GREEN
+            return f"{cf.BOLD}{maincolor}{prefix}{vstr[0:min(spos,rpos)]}{f'{cf.COLOR%cf.RED}{vstr[rpos:spos]}' if rpos < spos else ''}{cf.BRIGHTCOLOR%cf.BLACK}{vstr[spos:epos]}{maincolor}{vstr[epos:]}{estr}{suffix}{cf.RESET}"
+        else:
+            maincolor = (cf.BRIGHTCOLOR%cf.CYAN if ref else cf.COLOR%cf.WHITE)
+            return f"{cf.BOLD}{maincolor}{prefix}{vstr[0:spos]}{cf.BRIGHTCOLOR%cf.BLACK}{vstr[spos:epos]}{maincolor}{vstr[epos:]}{estr}{suffix}{cf.RESET}"
+
 
 # Semi-numerical integral of the integrand from infinity to the limit
 #  - the order of limits must be reversed for quad
@@ -505,6 +632,25 @@ def hybrid_integral(integrand, series, limit, *, xover,
         real_integrand = lambda z: Im(z, strict=True)
         int_prefactor = 1j
 
+    # Adaptive crossover
+    adaptive_xover = kwargs.get("adaptive_xover", False)
+    if adaptive_xover:
+        xover = limit
+        xover_scale = 1 + kwargs.get("xover_step", .1)
+        while abs(xover) < kwargs.get("max_xover", 1000):
+            head_at_xover = integrand(actual_var(xover))
+            tail_at_xover = evaluate_series(series, var=actual_var(xover), error=-1)
+            tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
+            if xover != limit and tail_relerr > prev:
+                xover /= xover_scale
+                break
+            xover *= xover_scale
+            prev = tail_relerr
+
+    clogger.debug(f"Hybrid integral ({'adaptive ' if adaptive_xover else ''}xover at {xover}):")
+
+    limits.append(xover)
+
     if limits[0] < xover:
         # -1 for swapping the integration limits
         head = -1 * var_prefactor * int_prefactor * QuadError.from_quad(
@@ -517,22 +663,27 @@ def hybrid_integral(integrand, series, limit, *, xover,
         head = QuadError(0)
         xover = limits[0]
 
-    # Calculate tail (infinite part) from series
-    # (over)estimate relative error of series approximation of integral
-    # using relative error of integrands at the xover
-    head_at_xover = integrand(actual_var(xover))
-    tail          = evaluate_series(series, var=actual_var(xover), deriv=-1, error=-1)
-    tail_at_xover = evaluate_series(series, var=actual_var(xover), error=0)
+    if xover != inf:
+        # Calculate tail (infinite part) from series
+        # (over)estimate relative error of series approximation of integral
+        # using relative error of integrands at the xover
+        head_at_xover = integrand(actual_var(xover))
+        tail          = evaluate_series(series, var=actual_var(xover), deriv=-1, error=-1)
+        tail_at_xover = evaluate_series(series, var=actual_var(xover), error=-1)
 
-    tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
-    if tail_relerr > 1e-1:
-        clogger.warning(f"Large tail relative error: {tail_relerr}")
-    tail = QuadError(tail.value(),
-                     abs(tail.value()*tail_relerr)
-                     # abs(tail.value())              # TEMP
-                     )
+        tail_relerr = abs(QuadError.decay((head_at_xover - tail_at_xover) / head_at_xover))
+        if tail_relerr > 1e-1:
+            clogger.warning(f"Large tail relative error: {tail_relerr}")
+        tail = QuadError(tail.value(),
+                        abs(tail.value()*tail_relerr)
+                        # abs(tail.value())              # TEMP
+                        )
+    else:
+        head_at_xover = 0
+        tail_at_xover = 0
+        tail_relerr = 0
+        tail = QuadError(0)
 
-    clogger.debug(f"Hybrid integral (xover at {xover}):")
     clogger.debug(f" > head at xover: {head_at_xover}")
     clogger.debug(f" > tail at xover: {tail_at_xover}")
     clogger.debug(f" > >  rel. error: {tail_relerr}")
@@ -568,7 +719,8 @@ def hybrid_error_log_header():
         'tail_relerr',
         'time'))
 
-def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, error=+1):
+def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, *,
+                    error=+1, max_order=False):
     """
     Evaluate a power series, or its derivative, or its logarithmic derivative
 
@@ -587,6 +739,9 @@ def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, error=+1):
             last term (most positive power), and a QuadError object is returned
             If -1, the error is estimated as the most negative power instead.
             If false, no error estimation is made and the result is returned as-is.
+    max_order - if truthy, truncate the series at this order.
+            This is done as if coeffs[n] did not exist for abs(n) > max_order:
+            the unused terms are not used to improve any error estimates.
     """
 
     # NOTE: allowing both deriv and log_deriv would work,
@@ -597,7 +752,7 @@ def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, error=+1):
 
     # Standardize the layout of the coefficients
     if not isinstance(coeffs, Mapping):
-        return evaluate_series({n: coeff for n,coeff in enumerate(coeffs)}, var,log_var, deriv,log_deriv, error)
+        return evaluate_series({n: coeff for n,coeff in enumerate(coeffs)}, var,log_var, deriv,log_deriv, error=error, max_order=max_order)
     # Standardize the error
     if error and error != -1:
         error = +1
@@ -658,6 +813,10 @@ def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, error=+1):
     last_n = 0
     err = 0
     for n, coeff in coeffs.items():
+        # Skip terms higher than max_order
+        if max_order and abs(n) > max_order:
+            continue
+
         if isinstance(coeff, Sequence):
             term = sum(subcoeff * series_term(n,m, deriv,log_deriv) for m,subcoeff in enumerate(coeff))
         else:
@@ -771,12 +930,12 @@ if __name__ == '__main__':
 
     t = .1
     print(f"t = {t}")
-    print(f"E1 = {evaluate_series(E_2d_series[1], var=t)}")
-    print(f"dE1/dt = {evaluate_series(E_2d_series[1], var=t, deriv=1)}")
-    print(f"d2E1/dt2 = {evaluate_series(E_2d_series[1], var=t, deriv=2)}")
-    print(f"dE1/dlogt = {evaluate_series(E_2d_series[1], var=t, log_deriv=1)}")
-    print(f"d2E1/dlogt2 = {evaluate_series(E_2d_series[1], var=t, log_deriv=2)}")
-    print(f"int E1 dt = {evaluate_series(E_2d_series[1], var=t, deriv=-1)}")
-    print(f"int E1 dt2 = {evaluate_series(E_2d_series[1], var=t, deriv=-2)}")
-    print(f"int E1 dlogt = {evaluate_series(E_2d_series[1], var=t, log_deriv=-1)}")
-    print(f"int E1 dlogt2 = {evaluate_series(E_2d_series[1], var=t, log_deriv=-2)}")
+    print(f"E1 = {evaluate_series(E_2d_series(1), var=t)}")
+    print(f"dE1/dt = {evaluate_series(E_2d_series(1), var=t, deriv=1)}")
+    print(f"d2E1/dt2 = {evaluate_series(E_2d_series(1), var=t, deriv=2)}")
+    print(f"dE1/dlogt = {evaluate_series(E_2d_series(1), var=t, log_deriv=1)}")
+    print(f"d2E1/dlogt2 = {evaluate_series(E_2d_series(1), var=t, log_deriv=2)}")
+    print(f"int E1 dt = {evaluate_series(E_2d_series(1), var=t, deriv=-1)}")
+    print(f"int E1 dt2 = {evaluate_series(E_2d_series(1), var=t, deriv=-2)}")
+    print(f"int E1 dlogt = {evaluate_series(E_2d_series(1), var=t, log_deriv=-1)}")
+    print(f"int E1 dlogt2 = {evaluate_series(E_2d_series(1), var=t, log_deriv=-2)}")
