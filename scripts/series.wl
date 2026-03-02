@@ -36,19 +36,23 @@ tSeries[expr_, var_:t] := Series[expr, {var, 0, order}];
 bSeries[expr_, var_:b] := Series[expr, {var, Infinity, 2*order}];
 
 SetAttributes[PrintSeries, HoldAll];
-PrintSeries[name_, series_, var_, ref_:None] := (
+PrintSeries[name_, series_, var_, ref_:None, tag_:None] := (
     fail = False;
+    vtag = If[tag =!= None, " v. " <> tag, ""];
     If[And[verify, ref =!= None],
-        If[PossibleZeroQ[Simplify[Normal[series-ref]]],
-            Print[name, " (\\033[32mPASS\\033[0m)", If[verbose, ": ", ""]];
+        If[Quiet @ Check[PossibleZeroQ @ Normal @ Simplify[series-ref], 0, {Series::ztest}],
+            Print[name, " (\\033[32mPASS", vtag, "\\033[0m)", If[verbose, ": ", ""]];
             ,
-            tmp = verbose; verbose = True;
-            PrintSeries[name <> " (\\033[33mDIFF\\033[0m)", series-ref, var];
-            verbose = tmp;
-            Print[name, " (\\033[31mFAIL\\033[0m): "];
+            tmp1 = verbose; tmp2 = vtag; verbose = True;
+            PrintSeries[name <> " (\\033[33mDIFF" <> vtag <> "\\033[0m)", series-ref, var];
+            verbose = tmp1; vtag = tmp2;
+            Print[name, " (\\033[31mFAIL", vtag, "\\033[0m): "];
             fail=True;
             ,
-            Print[name, " (\\033[34m????\\033[0m): "];
+            tmp = verbose; verbose = True;
+            PrintSeries[name <> " (\\033[34mREFERENCE" <> vtag <> "\\033[0m)", ref, var];
+            verbose = tmp;
+            Print[name, " (\\033[34mUNDECIDED", vtag, "\\033[0m): "];
             fail=True],
         If[verbose, Print[name, ": "]]];
     If[Or[verbose, fail],
@@ -74,7 +78,7 @@ bExport[name_, expr_:None] := (
 
 (* Jbub series *)
 
-verify = False; (* Verification is slow here because it relies on Mathematica's expansions of the logs *)
+verify = True (*False*); (* Verification is slow here because it relies on Mathematica's expansions of the logs *)
 
 bJbub[n_, b_] := (
     bp = (b + 1)/(2*b);
@@ -95,7 +99,7 @@ Do[
         2*order, -1, b, point->Infinity,
         verbose->debug];
     PrintSeries["Jbub" <> ToString[n], bseriesJbub[n], "1/b",
-        Normal @ bSeries[bJbub[n,b]]];
+        Simplify @ bSeries[bJbub[n,b]], "logs"];
     bExport["bseriesJbub" <> ToString[n], bseriesJbub[n]];
     ,
     {n, 1,3}];
@@ -110,7 +114,7 @@ Do[
         order, 0, t,
         verbose->debug];
     PrintSeries["Jbub" <> ToString[n], tseriesJbub[n], "t",
-        Normal @ tSeries[tJbub[n,t]]];
+        tSeries[Normal[bseriesJbub[n]] /. b -> Sqrt[1-4/t]], "bseries"];
     tExport["tseriesJbub" <> ToString[n], tseriesJbub[n]];
     ,
     {n, 1,3}];
@@ -140,7 +144,7 @@ PrintSeries["E1", tseriesE1, "t",
         + t^4 * (25555/18874368 - (4753*Zeta[3])/4194304)
         + t^5 * (9304913/37748736000 - (13783*Zeta[3])/67108864)
         ,
-        {t,0,5}]];
+        {t,0,5}], "old"];
 
 tExport["tseriesE1"];
 
@@ -159,7 +163,7 @@ PrintSeries["E2", tseriesE2, "t",
         + t^4 * (-127775/75497472 + (23765*Zeta[3])/16777216)
         + t^5 * (-9304913/25165824000 + (41349*Zeta[3])/134217728)
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE2"];
 
 tseriesE3 = (t/2 * D[tseriesE1, {t,2}] + (4+t)/8*D[tseriesE1, t] + 1/8*tseriesE1);
@@ -172,7 +176,7 @@ PrintSeries["E3", tseriesE3, "t",
         + t^4 * (3953471/1006632960 - (439635*Zeta[3])/134217728)
         + t^5 * (20893409/20132659200 - (463785*Zeta[3])/536870912)
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE3"];
 
 (* Ebar series *)
@@ -194,7 +198,7 @@ PrintSeries["E1bar", tseriesE1bar, "t",
         + t^4 * (134 - 105*Zeta[3])/983040
         + t^5 * (21086 - 17325*Zeta[3])/1887436800
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE1bar"];
 
 tseriesE2bar = (
@@ -213,7 +217,7 @@ PrintSeries["E2bar", tseriesE2bar, "t",
         + t^4 * (-134 + 105*Zeta[3])/1966080
         + t^5 * (-21086 + 17325*Zeta[3])/2516582400
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE2bar"];
 
 tseriesE3bar = (
@@ -231,7 +235,7 @@ PrintSeries["E3bar", tseriesE3bar, "t",
         + t^4 * (21086 - 17325*Zeta[3])/125829120
         + t^5 * (-3*(-273174 + 226625*Zeta[3]))/33554432000
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE3bar"];
 
 tseriesE4bar = (
@@ -253,7 +257,7 @@ PrintSeries["E4bar", tseriesE4bar, "t",
         + t^4 * (40382 + 9216*Pi^2 - 72765*Zeta[3])/61931520
         + t^5 * (-4017442 + 9437184*Pi^2 - 73419885*Zeta[3])/348798320640
         ,
-        {t, 0, 5}]];
+        {t, 0, 5}], "old"];
 tExport["tseriesE4bar"];
 
 Srat[b_] := (
@@ -305,13 +309,18 @@ PrintSeries["E5bar", tseriesE5bar, "t",
         + t^3 * (23450 - 464*Pi^2 - 7415*Zeta[3])/1228800
         + t^4 * (4450 - 334*Pi^2 + 1485*Zeta[3])/768000
         ,
-        {t, 0, 4}]];
+        {t, 0, 4}], "old"];
 tExport["tseriesE5bar"];
 
-bdiffeqE5bar[f_] := (
+homE5[f_] := (
     + D[f, {b,2}] * b^2
-    - D[f, {b,0}] * 2*b^2/(b^2 - 1)
-    - bS5);
+    - D[f, {b,0}] * 2*b^2/(b^2 - 1));
+bdiffeqE5bar[f_] := (homE5[f] - bS5);
+
+(*PrintSeries["g1", homE5[gn[1,b]], "1/b",
+    0, "diffeq"];
+PrintSeries["g2", homE5[gn[2,b]], "1/b",
+    0, "diffeq"];*)
 
 If[debug, PrintSeries["S5", bS5, "t"]];
 
@@ -321,7 +330,7 @@ bseriesE5bar = SolveBySeries[
     verbose->debug];
 
 PrintSeries["E5bar", bseriesE5bar, "1/b",
-    bSeries[Normal[tseriesE5bar] /. t -> 4/(1-b^2)]];
+    bSeries[Normal[tseriesE5bar] /. t -> 4/(1-b^2)], "tseries"];
 bExport["bseriesE5bar"];
 
 tseriesE6bar = (
@@ -340,7 +349,7 @@ PrintSeries["E6bar", tseriesE6bar, "t",
         + t^2 * (-Pi^2/480+427*Zeta[3]/8192-13733/184320)
         + t^3 * (-Pi^2/2240+3269*Zeta[3]/262144-137899/5898240)
         ,
-        {t, 0, 3}]];
+        {t, 0, 3}], "old"];
 tExport["tseriesE6bar"];
 
 (* Auxiliaries to E5bar *)
@@ -390,27 +399,57 @@ iseriesE5bar = bSeries[
         {n, 1,2}]];
 
 PrintSeries["(4.5)", iseriesE5bar, "1/b",
-    bseriesE5bar];
+    bseriesE5bar, "bseries"];
+
+(*Gn[n_,b_] := -(b^2-1)^2/(8*b) * Switch[n,
+    1, 2*b,
+    2, Normal @ bseriesJbub[1]/2] - gn[n,b] / (4/(1-b^2));
+
+Print @ Normal @ bSeries @ Simplify[(
+        + (t-16)*(t-4)/(12*t^2) * t*D[t*D[Normal[tseriesE1], t], t]
+        + ((t-10)/(12*t) - (t-16)/(2*t**2)) * t*D[Normal[tseriesE1], t]
+        + (1/24 - (t**2 - 28*t + 48)/(3*t**2*(t-4)) - sn[2,b]/b^2/t) * Normal[tseriesE1]
+        ) /. t -> 4/(1-b^2)];
+Quit[];
+iseriesE6bar = bSeries[
+    + bSeries @ Simplify[ Normal[
+        + (t-16)*(t-4)/(12*t^2) * t*D[t*D[tseriesE1, t], t]
+        + ((t-10)/(12*t) - (t-16)/(2*t**2)) * t*D[tseriesE1, t]
+        + (1/24 - (t**2 - 28*t + 48)/(3*t**2*(t-4)) - sn[2,b]/b^2/t) * tseriesE1
+        ] /. t -> 4/(1-b^2)]
+    + (
+        -  4 * bseriesJbub[3]
+        + 12 * bseriesJbub[2]
+        + 6*(4-Pi^2) * bseriesJbub[1]
+        ) / (48*t)
+    + (Pi^2 - 4*Zeta[3] - 20) / (12*t)
+    - Sum[
+        (-1)^n * Gn[3-n,b] * (Irat[n,b] + IJ[n,b] + IE[n,b] + If[n == 1, Idiv[b], 0]),
+        {n, 1,2}]];
+
+
+PrintSeries["(4.9-10)", iseriesE6bar, "1/b",
+    bseriesE6bar, "bseries"];*)
 
 PrintSeries["(4.20a)", bSeries[gn[2,b]*Irat[1,b] - gn[1,b]*Irat[2,b]], "1/b",
     Series[
         + (Pi^2 - 4*Zeta[3] - 68)/12
         + (4 - Pi^2)/(4*b^2),
-        {b, Infinity, 2}]];
+        {b, Infinity, 2}], "paper"];
 PrintSeries["(4.20b)", bSeries[gn[2,b]*IJ[1,b] - gn[1,b]*IJ[2,b]], "1/b",
     Series[
         - (4 - Pi^2)/(12*b^2),
-        {b, Infinity, 2}]];
+        {b, Infinity, 2}], "paper"];
 PrintSeries["(4.20c)", bSeries[gn[2,b]*IE[1,b] - gn[1,b]*IE[2,b]], "1/b",
     Series[
         - 63*Zeta[3]/10
         + (15863*Zeta[3] - 6642)/(1440*b^2),
-        {b, Infinity, 2}]];
+        {b, Infinity, 2}], "paper"];
 PrintSeries["(4.20d)", bSeries[sn[2,b]/b^2 * bseriesE1 + gn[2,b]*Idiv[b]], "1/b",
     Series[
         + (180 + 119*Zeta[3])/30
         + (4662-12713*Zeta[3])/(1440*b^2),
-        {b, Infinity, 2}]];
+        {b, Infinity, 2}], "paper"];
 
 
 bseriesSJg1 = bSeries[SJ[b] * gn[1,b]/b^2];
@@ -427,7 +466,7 @@ PrintSeries["SJg1", bseriesSJg1, "1/b",
         + 1/b^18 * (Pi^2/19 - 84060807056/808782975)
         + 1/b^20 * (Pi^2/21 - 138669411904/1206079875)
         ,
-        {b, Infinity, 20}]];
+        {b, Infinity, 20}], "old"];
 bExport["bseriesSJg1"];
 
 bseriesSJg2 = bSeries[SJ[b] * gn[2,b]/b^2];
@@ -442,7 +481,7 @@ PrintSeries["SJg2", bseriesSJg2, "1/b",
         + 1/b^17 * 4*(-1735258237 + 8054725*Pi^2)/70945875
         + 1/b^19 * -4*(-13766949808 + 48874455*Pi^2)/402026625
         ,
-        {b, Infinity, 19}]];
+        {b, Infinity, 19}], "old"];
 bExport["bseriesSJg2"];
 
 bseriesE1h2 = bSeries[bseriesE1 * hn[2,b]];
@@ -455,7 +494,7 @@ PrintSeries["E1h2", bseriesE1h2, "1/b",
         + 1/b^11 * (-22304071946 - 37545403665*Zeta[3])/6642155520
         + 1/b^13 * -(7*(86369562598 + 148521738375*Zeta[3]))/158146560000
         ,
-        {b, Infinity, 13}]];
+        {b, Infinity, 13}], "old"];
 bExport["bseriesE1h2"];
 
 bseriesHreg = bSeries[Hreg[b]];
@@ -466,5 +505,5 @@ PrintSeries["Hreg", bseriesHreg, "1/b",
         + 1/b^6 * (776223*Zeta[3] - 322346)/73728
         + 1/b^8 * 7*(133565625*Zeta[3] - 39203686)/110592000
         ,
-        {b, Infinity, 8}]];
+        {b, Infinity, 8}], "old"];
 bExport["bseriesHreg"];
