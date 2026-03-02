@@ -29,8 +29,9 @@ def tikz_yline(y):
 
 def convert_symlog(filename, logmin, logmax):
     basis = 10**logmin
+    suffix = f"symlog{logmin}{logmax}"
 
-    with open(f'{filename}.dat', 'r') as infile, open(f'{filename}_symlog.dat', 'w') as outfile:
+    with open(f'{filename}.dat', 'r') as infile, open(f'{filename}_{suffix}.dat', 'w') as outfile:
         for n, line in enumerate(infile):
             if n == 0 or not line.strip():
                 print(line, file=outfile)
@@ -42,7 +43,7 @@ def convert_symlog(filename, logmin, logmax):
         print(f"Read linear data from {infile.name}")
         print(f"Wrote symlog data to {outfile.name}")
 
-    with open(f'{filename}_symlog.tex', 'w') as texfile:
+    with open(f'{filename}_{suffix}.tex', 'w') as texfile:
         print(r"\def\symlogymax{" + str(symlog(+10**logmax, basis)) + "}", file=texfile)
         print(r"\def\symlogymin{" + str(symlog(-10**logmax, basis)) + "}", file=texfile)
 
@@ -94,4 +95,7 @@ def convert_symlog(filename, logmin, logmax):
 if __name__ == '__main__':
     import sys
 
-    convert_symlog(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
+    convert_symlog(
+        sys.argv[1][:-4] if sys.argv[1].endswith('.dat') else sys.argv[1],
+        int(sys.argv[2]),
+        int(sys.argv[3]))
