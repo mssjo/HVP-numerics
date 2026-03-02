@@ -9,6 +9,7 @@ from .elliptics import (eisen, get_character,
                         psi_varpi, psi_dvarpi, psi_ddvarpi,
                         psi_bball,
                         varpi_1)
+from .feyntrop_wrapper import FeynTrop
 from .E_2d import (E_2d,
                    H_block,H_bball, Li_elliptic,
                    Dq_t, Dq_varpi_1)
@@ -23,6 +24,7 @@ from .integration import (QuadError, IntegrationContext,
 from .Jbub import Jbub, Tab
 from .method import Method
 from .output import *
+from .points import *
 from .psd_wrapper import (pySecDec,
                           props_3loop, props_nloop, get_n_loop,
                           encode, decode)
