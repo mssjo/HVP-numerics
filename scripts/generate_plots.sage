@@ -12,7 +12,7 @@ import sys
 
 import HVPpy
 
-from mpmath import mp
+from mpmath import mp, mpf
 mp.prec = 128
 
 from HVPpy import clogger, init_clogging
@@ -122,6 +122,13 @@ def main(argv):
                 r = int(target[1])
                 E0 = {1: -7*zeta(3), 2: 7*zeta(3)/4, 3: (6 - 35*zeta(3))/32}
                 _plot(lambda q: (HVPpy.QuadError.decay(HVPpy.E_2d(r, tau=log(q)/(2j*pi), method=ctx.method) - E0[r]) if abs(q)<1 else NaN), (-1,1), (-1,1), f'E{r}q', pic_opt={'aspect_ratio':1})
+
+            case "E4q":
+                _get_res(512)
+                mp.prec = 64
+                r = int(target[1])
+                E0 = -5/mpf(3) + (7*pi**2)/12 - zeta(3)
+                _plot(lambda q: (HVPpy.QuadError.decay(HVPpy.Ebar(4, tau=log(q)/(2j*pi), method=ctx.method) - E0) if abs(q)<1 else NaN), (-1,1), (-1,1), f'E4q', pic_opt={'aspect_ratio':1})
 
             case "w1":
                 _get_res(512)
