@@ -14,6 +14,9 @@ class Method(Enum):
     # TSIL            = 't'
     # KALMAN          = 'k'
     AMFLOW          = 'a'
+    FEYNTROP        = 'f'
 
     def needs_IBP_derivs(self):
-        return self == self.SECDEC or self == self.AMFLOW
+        return self.value in "saf"
+    def needs_i_epsilon(self):
+        return self.value not in "sf"
