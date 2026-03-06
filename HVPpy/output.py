@@ -19,7 +19,7 @@ from .integration import QuadError, IntegrationContext
 from .points import *
 
 def plot_linspace(x_min, x_max, x_res,
-                  refine_pts=[], refine_lvl=3, refine_size=1, refine_pow=2,
+                  refine_pts=[], refine_lvl=3, refine_radius=1, refine_pow=2,
                   over_theta=False):
     if refine_lvl <= 0 or not refine_pts:
         yield from linspace(x_min, x_max, int(1 + x_res*(x_max-x_min)))
@@ -41,17 +41,17 @@ def plot_linspace(x_min, x_max, x_res,
 
             iterators = {i:v for i,v in {it: (_next(it) if val == min_val else val) for it,val in iterators.items()}.items() if v is not None}
 
-    # The whole range at standard resolution, plus each point ± refine_size
+    # The whole range at standard resolution, plus each point ± refine_radius
     #  at resoluion times refine_pow (and recursively so up to refine_lvl).
     yield from _merge_unique(
         plot_linspace(x_min, x_max, x_res),
         *(
-            plot_linspace(point-refine_size, point+refine_size, x_res*refine_pow,
-                          [point], refine_lvl-1, refine_size/refine_pow, refine_pow)
+            plot_linspace(point-refine_radius, point+refine_radius, x_res*refine_pow,
+                          [point], refine_lvl-1, refine_radius/refine_pow, refine_pow)
             if point != inf else
             sorted(1/x if x != 0. else inf # Special treatment for point at infinity
-                for x in plot_linspace(-refine_size, +refine_size, x_res,
-                                        [0.], refine_lvl, refine_size/refine_pow, refine_pow))
+                for x in plot_linspace(-refine_radius, +refine_radius, x_res,
+                                        [0.], refine_lvl, refine_radius/refine_pow, refine_pow))
             for point in refine_pts if not ((point < x_min or point > x_max) or (over_theta and point == 0))
             )
         )
@@ -304,17 +304,16 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
         return {'': sum(term for term in terms.values())} | terms
 
 
-    for JEZ in 'JEZ':
-        terms0 = PiJEZ(JEZ, ctx.but(method=Method.EXPANSION_0))
+    for JEZ, meth in product('JEZ', methods):
+        keys = PiJEZ(JEZ, ctx.but(method=Method.DUMMY)).keys()
 
-        with open(f"{plot_dir()}/Pi{JEZ}.dat", 'w') as out:
+        with open(plot_filename(f"Pi{JEZ}", meth, **options), 'w') as out:
             header = f'''{
-                    TAB.join(f"{meth.value}{err}{reim}Pi{JEZ}{term}"
-                            for meth,reim,err,term in product(
-                                methods,
+                    TAB.join(f"{err}{reim}Pi{JEZ}{term}"
+                            for reim,err,term in product(
                                 ("Re", "Im"),
                                 ("", "Abs", "Rel", "Min", "Max"),
-                                terms0.keys()
+                                keys
                                 )
                             )
                 }{TAB}{
@@ -324,7 +323,7 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
             print(f"t{TAB}{header}", file=out)
             clogger.info(f"Plotting Pi{JEZ}...")
 
-            for t in plot_linspace(t_min, t_max, t_res, refine_pts=[0,4,16], refine_lvl=5):
+            for t in plot_linspace(t_min, t_max, t_res, refine_pts=[0,4,16], refine_lvl=6, refine_radius=2):
 
                 clogger.debug(f"Plotting t = {t}")
 
@@ -333,31 +332,24 @@ def plot_Pi_data(t_min,t_max,t_res, methods, **options):
                     print('', file=out)
                     continue
 
-                    if tt > 4 and meth.needs_i_epsilon():
+                    if t > 4 and meth.needs_i_epsilon():
                         t += 1j*mp_eps() * (-1 if options.get("below_cut", False) else +1)
 
-                results = [timed(PiJEZ)(JEZ, ctx.but(t=t, method=meth)) for meth in methods]
-                values = [val for val,_ in results]
-                times = [time for _,time in results]
+                value, time = timed(PiJEZ)(JEZ, ctx.but(t=t, method=meth))
 
                 def _quotient(num, den):
                     return num/den if den != 0 else 0 if num == 0 else float('nan')
 
-                clogger.debug(f"values:{NL}{NL.join(f' > {v['']}' for v in values)}")
-
                 # Note the parallellism with how the header is constructed!
                 line = f'''{
-                        TAB.join(str(Re(err(reim(values[meth][key]))))
-                            for meth,reim,err,key in product(
-                                range(len(methods)),
+                        TAB.join(str(Re(err(reim(value[key]))))
+                            for reim,err,key in product(
                                 (lambda x: x.real, lambda x: x.imag),
                                 (lambda x: QuadError.get_value(x), _complex_abs, _complex_rel, _complex_min, _complex_max),
-                                terms0.keys()
+                                keys
                                 )
                             )
-                    }{TAB}{
-                        TAB.join(str(times[meth]) for meth in range(len(methods)))
-                    }'''
+                    }{TAB}{time}'''
 
                 print(f"{t.real}{TAB}{line}", file=out)
 
