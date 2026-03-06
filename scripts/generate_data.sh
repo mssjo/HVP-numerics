@@ -7,8 +7,10 @@ shift
 
 case $var in
     0)  cd ..
-        ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=8 $@
-        ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=16 $@
+        ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=5 $@
+#         ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=8 $@
+#         ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=16 $@
+        ./HVP bits=64 plot=masters,-8,24,2 methods=0 mso=32 $@
         ;;
 
     1)  cd ..
@@ -49,7 +51,9 @@ case $var in
         ;;
 
     Pi) cd ..
-        ./HVP bits=64 ut timeout=60 plot=Pi,-8,24,2 methods=e,s,0 awc clp=.5 $@
+        ./HVP bits=64 ut timeout=60 plot=Pi,-8,24,4 method=e awc clp=.5 $@
+        ./HVP bits=64 ut timeout=60 plot=Pi,-8,24,4 method=0 mso=5 $@
+        ./HVP bits=64 ut timeout=60 plot=Pi,-8,24,4 method=0 mso=32 $@
         ;;
 
     amflow) cd ../amflow

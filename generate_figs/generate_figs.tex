@@ -1313,10 +1313,10 @@
             \addplot[E1, amflow, forget plot] table[x=t, y=Time] {../plots/prec64/E1a.dat};
             \addplot[E4, amflow, forget plot] table[x=t, y=Time] {../plots/prec64/E4a.dat};
 
-            \addlegendimage{ours, gray};
-            \addlegendimage{secdec, gray};
-            \addlegendimage{feyntrop, gray};
-            \addlegendimage{amflow, gray};
+            \addlegendimage{plain legend={ours, gray}};
+            \addlegendimage{plain legend={secdec, gray}};
+            \addlegendimage{plain legend={feyntrop, gray}};
+            \addlegendimage{point legend={gray}};
 
             \legend{
                 $E_1(2;t)$,$E_2(2;t)$,$E_3(2;t)$,$\bar E_4(4;t)$,$\bar E_5(4;t)$,$\bar E_6(4;t)$,
@@ -1328,130 +1328,132 @@
     \label{fig:time}
 \end{figure}
 
-% \begin{figure}
-%     \def\Eplotfile{\plotdir/prec128/PiE.dat}
-%     \hspace{-1cm}
-%     \tikzsetnextfilename{fig-PiE}
-%     \begin{tikzpicture}
-%         \begin{axis}[
-% %                     width=\Eplotwidth,
-%                 width=.8\textwidth,
-%                 height=2*\Eplotheight, scale only axis,
-% %                     ylabel={$\Re\bar\Pi_E(t)$},
-% %                     ylabel={$\bar\Pi_E(t)$},
-%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
-% %                     xlabel={$t$},
-%                 ylabel={$\bar\Pi(t)$},
-%                 xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
-%                 minor xtick={-9,-8,...,23},
-%                 ymin=-245, ymax=245, ytick distance=50,
-%                 legend pos=outer north east, reverse legend, legend cell align=left
-%                 ]
-%
-%             %%% Real and imag together
-%             \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiE0, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiE0, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiE6, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE6, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiE5, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE5, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiE3, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, E3, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE3, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiE2, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, E2, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE2, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiE1, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, thick, E1, restrict x to domain=16:\Eplotxmax] table[x=t, y=eImPiE1, col sep=tab] {\Eplotfile};
-%             \addplot[real, series, black,          restrict x to domain=\Eplotxmin:16] table[x=t, y=0RePiE, col sep=tab] {\Eplotfile};
-%             \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiE, col sep=tab] {\Eplotfile};
-%             \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiE, col sep=tab] {\Eplotfile};
-%
-%             \legend{rem.,$\propto\bar E_6$,$\propto\bar E_5$,$\propto E_3$,$\propto E_2$,$\propto E_1$,series,$\bar \Pi_E$}
-%
-%         \end{axis}
-%         \begin{semilogyaxis}[
-%                 shift={(0,-(\Eplotheight + \Eplotsep))},
-%                 width=.8\textwidth,
-%                 height=\Eplotheight, scale only axis,
-% %                     ylabel={$\delta\bar\Pi_E(t)$},
-%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
-%                 xtick={0,4,16}, xmajorgrids=true,
-%                 minor xtick={-9,-8,...,23},
-%                 xlabel={$t$},
-%                 ylabel={$\delta\bar\Pi(t)$},
-%                 ymin=1e-16, ymax=1e-5, ytick={1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
-%                 ]
-%
-%             \addplot[real, total]         table[x=t, y=eAbsRePiE, col sep=tab]  {\Eplotfile};
-%             \addplot[imag, total]         table[x=t, y=eAbsImPiE, col sep=tab]  {\Eplotfile};
-%             \addplot[real, thick, gray]   table[x=t, y=eAbsRePiE0, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, gray]   table[x=t, y=eAbsImPiE0, col sep=tab] {\Eplotfile};
-%             \addplot[real, thick, E6]     table[x=t, y=eAbsRePiE6, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, E6]     table[x=t, y=eAbsImPiE6, col sep=tab] {\Eplotfile};
-%             \addplot[real, thick, E5]     table[x=t, y=eAbsRePiE5, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, E5 ]    table[x=t, y=eAbsImPiE5, col sep=tab] {\Eplotfile};
-%             \addplot[real, thick, E3]     table[x=t, y=eAbsRePiE3, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, E3]     table[x=t, y=eAbsImPiE3, col sep=tab] {\Eplotfile};
-%             \addplot[real, thick, E2]     table[x=t, y=eAbsRePiE2, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, E2]     table[x=t, y=eAbsImPiE2, col sep=tab] {\Eplotfile};
-%             \addplot[real, thick, E1]     table[x=t, y=eAbsRePiE1, col sep=tab] {\Eplotfile};
-%             \addplot[imag, thick, E1]     table[x=t, y=eAbsImPiE1, col sep=tab] {\Eplotfile};
-%             \addplot[real, series, black] table[x=t, y=0AbsRePiE, col sep=tab]  {\Eplotfile};
-%
-%         \end{semilogyaxis}
-%         \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
-%     \end{tikzpicture}
-%
-%     \figPiEcaption
-%     \label{fig:PiE}
-% \end{figure}
+\begin{figure}
+    \def\Eplotfile{\plotdir/prec64/PiE}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-PiE}
+    \begin{tikzpicture}
+        \begin{axis}[
+%                     width=\Eplotwidth,
+                width=.8\textwidth,
+                height=2*\Eplotheight, scale only axis,
+%                     ylabel={$\Re\bar\Pi_E(t)$},
+%                     ylabel={$\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                     xlabel={$t$},
+                ylabel={$\bar\Pi(t)$},
+                xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
+                minor xtick={-9,-8,...,23},
+                ymin=-245, ymax=245, ytick distance=50,
+                restrict y to domain=-300:300,
+                legend pos=outer north east, reverse legend, legend cell align=left,
+                ]
+
+            %%% Real and imag together
+            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=RePiE0, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=ImPiE0, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=RePiE6, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiE6, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=RePiE5, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiE5, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=RePiE3, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, E3, restrict x to domain=16:\Eplotxmax] table[x=t, y=ImPiE3, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=RePiE2, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, E2, restrict x to domain=16:\Eplotxmax] table[x=t, y=ImPiE2, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=RePiE1, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, thick, E1, restrict x to domain=16:\Eplotxmax] table[x=t, y=ImPiE1, col sep=tab] {\Eplotfile e.dat};
+            \addplot[series, total, restrict x to domain=\Eplotxmin:16, plain legend={series, total}] table[x=t, y=RePiE, col sep=tab] {\Eplotfile 05.dat};
+            \addplot[real, complex legend={total}, total]                              table[x=t, y=RePiE, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiE, col sep=tab] {\Eplotfile e.dat};
+
+            \legend{rem.,$\propto\bar E_6$,$\propto\bar E_5$,$\propto E_3$,$\propto E_2$,$\propto E_1$,series,$\bar \Pi_E$}
+
+        \end{axis}
+        \begin{semilogyaxis}[
+                shift={(0,-(\Eplotheight + \Eplotsep))},
+                width=.8\textwidth,
+                height=\Eplotheight, scale only axis,
+%                     ylabel={$\delta\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={$t$},
+                ylabel={$\delta\bar\Pi(t)$},
+                ymin=1e-19, ymax=1e-5, ytick={1e-18,1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
+                ]
+
+            \addplot[real, total]         table[x=t, y=AbsRePiE, col sep=tab]  {\Eplotfile e.dat};
+            \addplot[imag, total]         table[x=t, y=AbsImPiE, col sep=tab]  {\Eplotfile e.dat};
+            \addplot[real, thick, gray]   table[x=t, y=AbsRePiE0, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, gray]   table[x=t, y=AbsImPiE0, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, thick, E6]     table[x=t, y=AbsRePiE6, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, E6]     table[x=t, y=AbsImPiE6, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, thick, E5]     table[x=t, y=AbsRePiE5, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, E5 ]    table[x=t, y=AbsImPiE5, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, thick, E3]     table[x=t, y=AbsRePiE3, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, E3]     table[x=t, y=AbsImPiE3, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, thick, E2]     table[x=t, y=AbsRePiE2, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, E2]     table[x=t, y=AbsImPiE2, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, thick, E1]     table[x=t, y=AbsRePiE1, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, thick, E1]     table[x=t, y=AbsImPiE1, col sep=tab] {\Eplotfile e.dat};
+            \addplot[real, series, total] table[x=t, y=AbsRePiE, col sep=tab]  {\Eplotfile 05.dat};
+            \addplot[real, series, total] table[x=t, y=AbsRePiE, col sep=tab]  {\Eplotfile 032.dat};
+
+        \end{semilogyaxis}
+        \useasboundingbox (0,-1.2\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+
+    \figPiEcaption
+    \label{fig:PiE}
+\end{figure}
 
 
-% \begin{figure}
-%     \def\Jplotfile{\plotdir/PiJ.dat}
-%     \def\Zplotfile{\plotdir/PiZ.dat}
-%     \hspace{-1cm}
-%     \tikzsetnextfilename{fig-PiJ}
-%     \begin{tikzpicture}
-%         \begin{axis}[
-%                 width=.8\textwidth,
-%                 height=2*\Eplotheight, scale only axis,
-% %                     ylabel={$\Re\bar\Pi_J(t)$},
-% %                     ylabel={$\bar\Pi_J(t)$},
-%                 xmin=\Eplotxmin, xmax=\Eplotxmax,
-% %                     xlabel={$t$},
-%                 xtick={0,4,16}, xmajorgrids=true,
-%                 minor xtick={-9,-8,...,23},
-%                 xlabel={$t$},
-%                 ylabel={$\bar\Pi(t)$},
-%                 ymin=-345, ymax=345, ytick distance=50,
-%                 legend pos=outer north east, reverse legend, legend cell align=left
-%                 ]
-%
-%             \addplot[real, total, seriesdotted]                                        table[x=t, y=eRePiZ, col sep=tab] {\Zplotfile};
-%             \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=eRePiJ0, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=eImPiJ0, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=eRePiJ111, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ111, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=eRePiJ21, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ21, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E4}, thick, E4]                      table[x=t, y=eRePiJ11, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E4, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ11, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=eRePiJ3, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E3, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ3, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=eRePiJ2, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E2, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ2, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=eRePiJ1, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, thick, E1, restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ1, col sep=tab] {\Jplotfile};
-%             \addplot[real, complex legend={total}, total]                              table[x=t, y=eRePiJ, col sep=tab] {\Jplotfile};
-%             \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=eImPiJ, col sep=tab] {\Jplotfile};
-%
-%             \legend{$\bar\Pi_\zeta$,rem.,$\propto[\Jbub1]^3$,$\propto\Jbub1\Jbub2$,$\propto[\Jbub1]^2$,$\propto\Jbub3$,$\propto\Jbub2$,$\propto\Jbub1$,$\bar\Pi_J$}
-%
-%         \end{axis}
-%     \end{tikzpicture}
-%     \figPiJcaption
-%     \label{fig:PiJ}
-% \end{figure}
+\begin{figure}
+    \def\Jplotfile{\plotdir/prec64/PiJ}
+    \def\Zplotfile{\plotdir/prec64/PiZ}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-PiJ}
+    \begin{tikzpicture}
+        \begin{axis}[
+                width=.8\textwidth,
+                height=2*\Eplotheight, scale only axis,
+%                     ylabel={$\Re\bar\Pi_J(t)$},
+%                     ylabel={$\bar\Pi_J(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                     xlabel={$t$},
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={$t$},
+                ylabel={$\bar\Pi(t)$},
+                ymin=-345, ymax=345, ytick distance=50,
+                legend pos=outer north east, reverse legend, legend cell align=left
+                ]
+
+            \addplot[series, total, plain legend={series, total}]                      table[x=t, y=RePiZ, col sep=tab]   {\Zplotfile e.dat};
+            \addplot[real, complex legend={thick, gray}, thick, gray]                  table[x=t, y=RePiJ0, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, gray]                                   table[x=t, y=ImPiJ0, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E6}, thick, E6]                      table[x=t, y=RePiJ111, col sep=tab] {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E6, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ111, col sep=tab] {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E5}, thick, E5]                      table[x=t, y=RePiJ21, col sep=tab]  {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E5, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ21, col sep=tab]  {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E4}, thick, E4]                      table[x=t, y=RePiJ11, col sep=tab]  {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E4, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ11, col sep=tab]  {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E3}, thick, E3]                      table[x=t, y=RePiJ3, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E3, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ3, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E2}, thick, E2]                      table[x=t, y=RePiJ2, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E2, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ2, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[real, complex legend={thick, E1}, thick, E1]                      table[x=t, y=RePiJ1, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[imag, forget plot, thick, E1, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ1, col sep=tab]   {\Jplotfile e.dat};
+            \addplot[real, complex legend={total}, total]                              table[x=t, y=RePiJ, col sep=tab]    {\Jplotfile e.dat};
+            \addplot[imag, forget plot, total,     restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPiJ, col sep=tab]    {\Jplotfile e.dat};
+
+            \legend{$\bar\Pi_\zeta$,rem.,$\propto[\Jbub1]^3$,$\propto\Jbub1\Jbub2$,$\propto[\Jbub1]^2$,$\propto\Jbub3$,$\propto\Jbub2$,$\propto\Jbub1$,$\bar\Pi_J$}
+
+        \end{axis}
+    \end{tikzpicture}
+    \figPiJcaption
+    \label{fig:PiJ}
+\end{figure}
 
 
 % \begin{figure}

@@ -125,29 +125,33 @@
     \caption[The function Jbub.]{
         The functions $\Jbub{n}(t)$, normalized so that the magnitude is roughly constant in $n$.
         Real parts are shown as solid lines, and imaginary parts as dashed lines; colors indicate different $n$ as per the plot legend.
-        Below the 2-pion threshold ($t=4$), the imaginary parts are identically zero and are not shown.
+        Below the two-pion threshold ($t=4$), the imaginary parts are identically zero and are not shown.
         Above threshold, $t$ has been given a small positive imaginary part.
         }}
 
 \newcommand{\figmasterscaption}{%
     \caption[The six elliptic master integrals plotted as functions of $t$.]{
         The six elliptic master integrals plotted as functions of $t$, showing the real
-        (\inlinetikz{X}{
+        (\inlinetikz{()}{
             \draw[real] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
         and imaginary
-        (\inlinetikz{X}{
+        (\inlinetikz{()}{
             \draw[imag] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
         parts.
         The lines represent our implementation, \texttt{pySecDec} and \texttt{FeynTrop}, which (excepting cases where \texttt{FeynTrop} fails to converge) are indistinguishable at the scale of the plot.
-        The isolated points () are obtained using \texttt{AMFlow}, and the dashed lines
-        (\inlinetikz{X}{
+        The isolated points
+        (\inlinetikz{()}{
+            \draw[real, solid] (.0  ,.5\inlinetikzheight) +(-2.5pt,0) -- +(+2.5pt,0) +(0,-2.5pt) -- +(0,+2.5pt);
+            \draw[imag, solid] (.3,.5\inlinetikzheight) +(-2.5pt,0) -- +(+2.5pt,0) +(0,-2.5pt) -- +(0,+2.5pt);})
+        are obtained using \texttt{AMFlow}, and the dashed lines
+        (\inlinetikz{()}{
             \draw[real, series dash] (0,.5\inlinetikzheight) -- +(\legendwidth,0);})
         indicate the 8th-order series expansion around $t=0$ (we use a relatively low-order expansion here for legibility).
 %         The two- and four-pion thresholds are drawn as vertical dotted lines.
 %         Below each plot is shown the relative difference between \texttt{pySecDec} (lines with error bands) and our implementation, whose error is not visible at the scale of the plots.
 %         Also shown is the relative difference between our implementation and the series expansion.
 %         Reinterpreting the below-threshold imaginary part as errors (like in \cref{fig:abserr}) gives error bands much taller than the plots.
-        The error bands too narrow to be visible---see \cref{fig:E1,fig:reldiff}---but the absolute uncertainty of each line is shown on a logarithmic scale below each plot, using the Eisenstein variant of our implementation, as well as the truncation error of the series expansion.
+        The error bands too narrow to be visible---see \cref{fig:E1,fig:reldiff}---but the absolute uncertainty of each line is shown on a logarithmic scale below each plot, using the Eisenstein variant of our implementation, as well as the truncation error of the series expansion, both for the 5th-order series shown above and for the more precise 32nd-order series used elsewhere.
         The error band of \texttt{pySecDec}, which is essentially the same for the real and imaginary parts, is shown in gray, and where applicable, that of \texttt{FeynTrop} is shown in lighter gray.
         \texttt{AMFlow} was run with a precision goal of $10^{-12}$; it provides no estimate of the actual error achieved.
         }}
@@ -218,7 +222,7 @@
 \newcommand{\figPiEcaption}{%
     \caption[$\bar\Pi_E$]{
         The real (solid) and imaginary (dashed) parts of $\bar\Pi_E(t)$, and its fifth-order series expansion around $t=0$ (dotted), which has radius of convergence $4$.
-        The error bands are not visible on the scale of the plot, but the absolute uncertainties are shown on a logarithmic scale below the main panel.
+        The error bands are not visible on the scale of the plot, but the absolute uncertainties are shown on a logarithmic scale below the main panel, along with the smaller uncertainty of a 32nd-order series expansion.
         Also shown are the contributions from individual master integrals (i.e., the term in \cref{eq:PiE} consisting of that integral times a Laurent polynomial of $t$), as well as the $E_i$-independent remainder.
         The imaginary parts are only shown above their respective thresholds.
         The error bands are too small to be seen at the scale of the plot, but the absolute uncertainties are shown on a logarithmic scale below the main plot.
