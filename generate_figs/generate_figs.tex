@@ -1456,6 +1456,57 @@
 \end{figure}
 
 
+\begin{figure}
+    \def\Eplotfile{\plotdir/prec64/PiTOT}
+    \hspace{-1cm}
+    \tikzsetnextfilename{fig-PiTOT}
+    \begin{tikzpicture}
+        \begin{axis}[
+%                     width=\Eplotwidth,
+                width=.8\textwidth,
+                height=1.4*\Eplotheight, scale only axis,
+%                     ylabel={$\Re\bar\Pi_E(t)$},
+%                     ylabel={$\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+%                     xlabel={$t$},
+                ylabel={$\bar\Pi(t)$ [no LECs]},
+                xtick={0,4,16}, xmajorgrids=true, xticklabel pos=top,
+                minor xtick={-9,-8,...,23},
+                ymin=-245, ymax=245, ytick distance=50,
+                restrict y to domain=-300:300,
+%                 legend pos=outer north east, reverse legend, legend cell align=left,
+                ]
+
+            %%% Real and imag together
+            \addplot[real, total]                                     table[x=t, y=RePi, col sep=tab] {\Eplotfile e.dat};
+            \addplot[imag, total, restrict x to domain=4:\Eplotxmax]  table[x=t, y=ImPi, col sep=tab] {\Eplotfile e.dat};
+        \end{axis}
+        \def\Eplotfile{\plotdir/prec64/PiE}
+        \begin{semilogyaxis}[
+                shift={(0,-(.7\Eplotheight + \Eplotsep))},
+                width=.8\textwidth,
+                height=.7\Eplotheight, scale only axis,
+%                     ylabel={$\delta\bar\Pi_E(t)$},
+                xmin=\Eplotxmin, xmax=\Eplotxmax,
+                xtick={0,4,16}, xmajorgrids=true,
+                minor xtick={-9,-8,...,23},
+                xlabel={$t$},
+                ylabel={$\delta\bar\Pi(t)$},
+                ymin=1e-19, ymax=1e-5, ytick={1e-18,1e-15,1e-12,1e-9,1e-6}, ymajorgrids=true, ytick style={draw=none},
+                ]
+
+            \addplot[real, total]                                    table[x=t, y=AbsRePiE, col sep=tab]  {\Eplotfile e.dat};
+            \addplot[imag, total, restrict x to domain=4:\Eplotxmax] table[x=t, y=AbsImPiE, col sep=tab]  {\Eplotfile e.dat};
+
+        \end{semilogyaxis}
+        \useasboundingbox (0,-1\Eplotheight) + (0,-\Eplotsep) + (0,-.5cm); % Force larger bounding box
+    \end{tikzpicture}
+
+    \caption{Simplified sum of \cref{fig:PiE,fig:PiJ} for talks}
+    \label{fig:PiTOT}
+\end{figure}
+
+
 % \begin{figure}
 %     \newcommand{\plotfile}{../plots/prec128/E5e_err.dat}
 %     \tikzsetnextfilename{fig-errors}
