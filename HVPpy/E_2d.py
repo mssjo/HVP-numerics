@@ -219,6 +219,11 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
             w1 = varpi_1(ctx.tau, method=ctx.method)
 
             match (n, d_logt):
+                case (0,0):
+                    return -7*zeta(3)
+                case (0,_):
+                    return 0
+
                 case (1,0):
                     return -w1*H_block(3, q,logq, ctx)
 
