@@ -17,7 +17,7 @@ class Method(Enum):
     FEYNTROP        = 'f'
     GRID            = 'g'
     AUTO            = '*'
-    DUMMY           = ' '
+    DUMMY           = ''
 
     def needs_IBP_derivs(self):
         return self.value in "saf"
@@ -25,4 +25,6 @@ class Method(Enum):
         return self.value not in "sf"
     def is_concrete(self):
         return self.value not in "*"
+    def has_epsilon(self):
+        return self.value in "sfa"
 

@@ -229,6 +229,7 @@ plotlist = {
     }
 optionlist = {
     "bar":              ["Compute Ebar also when index=1, 2 or 3 (default is to compute E_2d here)"],
+    "2d":               ["Compute E_2d also when index=4, 5 or 6 (default is to compute Ebar here)"],
     "compare":          ["When computing master integrals with different methods, highlight",
                             "the output to show the degree of agreement with the result of the",
                             "first method."],

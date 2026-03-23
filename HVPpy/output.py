@@ -91,7 +91,7 @@ def evaluate_masters(tt, masters, methods, **options):
             else:
                 prefix = ""
 
-            if n >= 4 or "bar" in options:
+            if (n >= 4 and not options.get("2d", False)) or (n <= 3 and options.get("bar", False)):
                 Efun, Ename = Ebar, f"{prefix}E{n}bar"
             else:
                 Efun, Ename = E_2d, f"{prefix}E{n}_2d"
@@ -220,7 +220,7 @@ def plot_E_data(t_min,t_max,t_res, ns, methods, err_log=False, **options):
                         print('', file=out)
                         continue
 
-                    if n > 4 or options.get("bar", False):
+                    if (n >= 4 and not options.get("2d", False)) or (n <= 3 and options.get("bar", False)):
                         Efun = Ebar
                     else:
                         Efun = E_2d

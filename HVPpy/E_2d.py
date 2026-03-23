@@ -147,9 +147,13 @@ def H_block(r, q,logq, ctx):
 @log_errors
 @add_QuadError
 # @print_return
-def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Method.ELLIPTIC, **options):
+def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, div=0, method=Method.ELLIPTIC, **options):
 
     ctx = context if context else IntegrationContext(t,tau,beta, method=method, **options)
+
+    # All of these integrals are finite
+    if div > 0:
+        return 0
 
     # Implement imaginary_error
     if ctx.imaginary_error and (is_real(ctx.t) and Re(ctx.t) < threshold[n]):
@@ -328,22 +332,22 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
             # Only import if needed
             from .psd_wrapper import pySecDec, nu_master
 
-            with pySecDec(n, dim="2-2*eps", **ctx.options) as integral:
-                return integral(t=Re(ctx.t, strict=True))[0] # Imaginary t is broken in pySecDec
+            with pySecDec(n, dim="2-2*eps", maxeps=-min(div,0), **ctx.options) as integral:
+                return integral(t=Re(ctx.t, strict=True))[-div] # Imaginary t is broken in pySecDec
 
         case Method.AMFLOW:
             # Only import if needed
             from .amflow_wrapper import AMFlow, nu_master
 
             with AMFlow(n, dim="2", **ctx.options) as integral:
-                return integral(t=ctx.t)[0]
+                return integral(t=ctx.t)[-div]
 
         case Method.FEYNTROP:
             # Only import if needed
             from .feyntrop_wrapper import FeynTrop
 
-            with FeynTrop(n, dim=2, **ctx.options) as integral:
-                return integral(t=ctx.t)[0]
+            with FeynTrop(n, dim=2, maxeps=-min(div,0), **ctx.options) as integral:
+                return integral(t=ctx.t)[-div]
 
         case Method.EXPANSION_0:
             try:
