@@ -1,3 +1,4 @@
+all_loop_sunset/*
 amflow/*
 !AMFlow_defs.m
 !generate_AMFlow_data.wl
@@ -10,13 +11,14 @@ old/*
 HVPpy.egg-info
 HVPpy/__pycache__
 HVP.log
+grids/*
 star_point_integrals.json
-HVPpy/series_expansion.py
+HVPpy/series_expansion*.py
 
 scripts/series*
 !scripts/series.wl
 !scripts/series.sh
-scripts/generate_plots.sage.py
+scripts/*.sage.py
 
 generate_figs/tikz/*
 generate_figs/*
