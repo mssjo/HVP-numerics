@@ -4,7 +4,7 @@ from math import prod
 
 import mpmath
 from mpmath import quad, quadsubdiv, quadosc, nsum
-from mpmath import sqrt, log, factorial, ceil
+from mpmath import sqrt, log, factorial, ceil, atanh, tanh
 from mpmath import nstr, mpc, inf
 
 from .clogging import clogger
@@ -90,6 +90,25 @@ class IntegrationContext:
             return self.__dict__.get(attr, default)
         else:
             return type(self.__dict__.get(attr, default))
+
+    def concrete_method(self, prec_frac=8):
+        if self.method.is_concrete():
+            return self.method
+
+        from .utilities import mp_eps
+        from .series_expansion import E_2d_series
+
+        tpow = abs(self.t)**len(E_2d_series(1))
+        eps = mp_eps(margin = mp.dps/prec_frac)
+
+        if tpow < eps:
+            return Method.EXPANSION_0
+        # elif tpow > 1/eps:
+            # return Method.EXPANSION_INF
+        # elif abs(t) < 4: # MAYBE?
+            # return Method.POISSON
+        else:
+            return Method.EISENSTEIN
 
     def __getattr__(self, attr):
         """
@@ -833,6 +852,90 @@ def evaluate_series(coeffs, var,log_var=None, deriv=0,log_deriv=0, *,
         return QuadError(series, err)
     else:
         return series
+
+GRIDS = {}
+def interpolate_grid(func, key, ctx):
+    global GRIDS
+
+    def grid_file(key):
+        return f"grids/{key}.json"
+
+    resolution = ctx.get("grid_resultion", 16, int)
+    npts = resolution+1
+
+    # Load grid if not already loaded
+    if key not in GRIDS:
+        import json
+        try:
+            filename = grid_file(key)
+            with open(filename, 'r') as cache:
+                cached = json.load(cache)
+
+            if resolution > cached["resolution"]:
+                clogger.warning(f"JSON cache resultion insufficient, creating {filename} anew...")
+            else:
+                GRIDS[key] = cached["grid"]
+
+        except IOError:
+            clogger.warning(f"JSON cache not found, creating {filename} anew...")
+        except json.decoder.JSONDecodeError:
+            clogger.warning(f"JSON cache corrupted, creating {filename} anew...")
+
+    # Generate grid if loading failed
+    if key not in GRIDS:
+        from numpy import linspace
+        from itertools import product
+
+        grid = []
+        for re,im in product(linspace(-1,1, npts), repeat=2):
+            t = mpc(atanh(re), atanh(im))
+            v = str(QuadError.decay(func(ctx.but(t=t))))
+            if im == -1:
+                grid.append([v])
+            else:
+                grid[-1].append(v)
+        GRIDS[key] = grid
+
+        with open(filename, 'w') as cache:
+            json.dump({"resolution": resolution, "settings": str(ctx), "grid": grid}, cache)
+
+    # Now we have a grid -- iterpolate from it
+    grid = GRIDS[key]["grid"]
+    t = ctx.t
+
+    re = tanh(t.real)
+    im = tanh(t.imag)
+
+    def index_to_t(index):
+        return atanh(2*index/resolution - 1)
+    def find_index(target, func):
+        index = resolution//2
+        step = resolution//4
+        while 0 <= index < npts:
+            if func(index) > target:
+                index -= stride
+            elif index == func(index+1) > target:
+                return index
+            else:
+                i += stride
+
+            if stride > 1:
+                stride //= 2
+
+    # Get index of nearest point with t <= our t in real and imaginary direction
+    i = find_index(re, index_to_t)
+    j = find_index(im, index_to_t)
+
+    # Convert to coordinate that charts the grid cell as [0,1]^2
+    x = (re - index_to_t(i)) / (index_to_t(i+1) - index_to_t(i))
+    y = (re - index_to_t(j)) / (index_to_t(j+1) - index_to_t(j))
+
+    # Interpolate using technique from way back in the bachelor's thesis
+    a00 = mpc(grid[i  ][j  ])
+    a01 = mpc(grid[i+1][j  ]) - a00
+    a10 = mpc(grid[i  ][j+1]) - a00
+    a11 = mpc(grid[i+1][j+1]) - a01 - a10 + a00
+    return a00 + a01*x + a10*y + a11*x*y
 
 
 

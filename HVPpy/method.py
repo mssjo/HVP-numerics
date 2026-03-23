@@ -15,8 +15,14 @@ class Method(Enum):
     # KALMAN          = 'k'
     AMFLOW          = 'a'
     FEYNTROP        = 'f'
+    GRID            = 'g'
+    AUTO            = '*'
+    DUMMY           = ' '
 
     def needs_IBP_derivs(self):
         return self.value in "saf"
     def needs_i_epsilon(self):
         return self.value not in "sf"
+    def is_concrete(self):
+        return self.value not in "*"
+

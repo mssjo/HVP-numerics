@@ -453,7 +453,17 @@ def Ebar(n, context=None, *,
         return Ebar_divergence(n, div, ctx.t, ctx.beta)
 
     # Some method-specific preparations/results
-    match ctx.method:
+    match ctx.concrete_method():
+        case Method.DUMMY:
+            return mpf("nan")
+
+        case Method.GRID:
+            from .integration import interpolate_grid
+            return interpolate_grid(
+                lambda c: Ebar(n, c, div=div, d_logt=d_logt),
+                f"{f'e{div}' if div else ''}{f'd{d_logt}' if d_logt else ''}E{n}bar",
+                ctx.but(method=Method.AUTO))
+
         case Method.SECDEC:
             # Only import if needed
             from .psd_wrapper import pySecDec
@@ -486,7 +496,7 @@ def Ebar(n, context=None, *,
                 raise NotImplementedError(f"Not implemented: Ebar{n} expanded around t=0")
         case Method.EXPANSION_INF:
             try:
-                return evaluate_series(Ebar_series_inf[n], var=ctx.t,  log_deriv=d_logt, error=True, max_order=ctx.max_series_order)
+                return evaluate_series(Ebar_series_inf(n), var=ctx.t,  log_deriv=d_logt, error=True, max_order=ctx.max_series_order)
             except IndexError:
                 raise NotImplementedError(f"Not implemented: Ebar{n} expanded around t=inf")
 

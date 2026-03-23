@@ -194,11 +194,21 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
             return E_2d(n, ctx.but(IBP_derivs=True))
         raise NotImplementedError(f"Not implemented: t-derivatives with {ctx.method}")
 
-    match ctx.method:
+    match ctx.concrete_method():
+        case Method.DUMMY:
+            return mpf("nan")
+
+        case Method.GRID:
+            from .integration import interpolate_grid
+            return interpolate_grid(
+                lambda c: E_2d(n, c, d_logt=d_logt),
+                f"{f'd{d_logt}' if d_logt else ''}E{n}",
+                ctx.but(method=Method.AUTO))
+
         # double bessel only differs from bessel for E5,E6 purposes
         case Method.BESSEL | Method.DOUBLE_BESSEL:
             if not is_real(ctx.t) or Re(ctx.t) >= 16:
-                return float('nan')
+                return mpf('nan')
             return QuadError.from_quad(lambda x: bessel_integrand(n, ctx.t,x, d_logt), [(0,inf)])
 
         # These differ only in how the H-block (H_bball with associated factors) is computed
@@ -338,7 +348,7 @@ def E_2d(n, context=None, *, t=None, tau=None, beta=None, d_logt=0, method=Metho
 
         case Method.EXPANSION_INF:
             try:
-                return evaluate_series(E_2d_series_inf[n], var=ctx.t, log_var=log(-ctx.t), log_deriv=d_logt, error=-1, max_order=ctx.max_series_order)
+                return evaluate_series(E_2d_series_inf(n), var=ctx.t, log_var=log(-ctx.t), log_deriv=d_logt, error=-1, max_order=ctx.max_series_order)
             except IndexError:
                 raise NotImplementedError(f"Not implemented: E{n} in 2d expanded around t=∞")
 
