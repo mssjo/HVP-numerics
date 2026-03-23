@@ -1,10 +1,14 @@
 # HVP-numerics
 
+[![arXiv:2603.15252](https://img.shields.io/badge/arXiv-2603.15252-b31b1b.svg)](https://arxiv.org/abs/2603.15252?logo=arxiv)
+
 [![Author: Mattias Sjö](https://img.shields.io/badge/author-Mattias%20Sj%C3%B6-blue)](https://inspirehep.net/authors/2747078)
 [![Author: Pierre Vanhove](https://img.shields.io/badge/author-Pierre_Vanhove-blue)](https://pierrevanhove.github.io)
 [![Author: Alessandro Lupo](https://img.shields.io/badge/author-Alessandro_Lupo-blue)](https://inspirehep.net/authors/1982690)
 
-This is the implementation behind [manuscript in preparation].
+![Language: python](https://img.shields.io/badge/Language-python-yellow?logo=python)
+
+This is the implementation behind [arXiv:2603.15252](https://arxiv.org/abs/2603.15252)
 It is mainly written in Python using mpmath, with some auxiliary scripts for preparing its output for inclusion in the paper.
 
 ## Dependencies
