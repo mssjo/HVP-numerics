@@ -482,6 +482,23 @@ def Ebar(n, context=None, *,
             # Only import if needed
             from .feyntrop_wrapper import FeynTrop
 
+            # Leverage FeynTrop's ability to compute positive epsilon powers
+            #  to get E5,E6 via their pre-Schouten expressions
+            if n in {5,6} and d_logt == 0:
+                t = ctx.t
+                beta = ctx.beta
+                J = {i: Jbub(i, beta) for i in {1,2,3}}
+                E2d = {}
+                for i in {0,1,2,3,4,5,6}:
+                    with FeynTrop(i, dim=2, maxeps=2, **ctx.options) as feyntrop:
+                        E2d[i] = feyntrop(t)
+
+                # These expressions are drawn straight from HVP-3loop/dimshift.hf
+                if n == 5:
+                    return ((-3*t**4*(2 + J[1]) + 3*t**3*(16 + 4*J[1] - J[2]) + 16*(-192 + 132*J[1]**2 + 24*J[2] - 7*J[3] + J[1]*(54 - 30*J[2] - 63*zeta(2)) - 12*zeta(3)) + t**2*(168 + 96*J[1]**2 - 5*J[3] + 36*zeta(2) - 3*J[1]*(-54 + 16*J[2] + 15*zeta(2)) - 12*zeta(3)) + 2*t*(864 - 120*J[2] + 3*J[2]**2 + 32*J[3] + 6*J[1]**2*(-74 + 3*zeta(2)) + 4*J[1]*(33*J[2] + J[3] + 72*zeta(2)) + 48*zeta(3)))/(36*(t-4)**2) - (2*(-6 + t)*E2d[0][0])/(9*t) + (2*E2d[0][1])/(9*t) - ((3392 - 696*t - 58*t**2 - 18*t**3 + t**4)*E2d[1][0])/(288*t) + ((-320 + 20*t + 11*t**2 + t**3)*E2d[1][1])/(144*t) + ((-32 + 4*t + t**2)*E2d[1][2])/(144*t) + ((-7424 + 6720*t + 456*t**2 + 150*t**3 - 30*t**4 + t**5)*E2d[2][0])/(288*t) - ((768 - 384*t - 148*t**2 - 19*t**3 + t**4)*E2d[2][1])/(144*t) + (8/9 - 8/(9*t) + (5*t)/36 - t**2/144)*E2d[2][2] + ((2176 + 152*t + 46*t**2 - 20*t**3 + t**4)*E2d[3][0])/144 - (t*(-64 - 12*t + t**2)*E2d[3][1])/72 + ((64 + 12*t - t**2)*E2d[3][2])/72 + ((-248 - 22*t - 22*t**2 + t**3)*E2d[4][0])/24 + ((-36 - 5*t - t**2)*E2d[4][1])/12 + ((-4 - t)*E2d[4][2])/12 + ((-52 + 32*t + 21*t**2 - t**3)*E2d[5][0])/6 + (-4 + (8*t)/3 + t**2/2)*E2d[5][1] + (2*(-1 + t)*E2d[5][2])/3 + (t*(40 + 38*t - 16*t**2 + t**3)*E2d[6][0])/6 - (t*(-8 - 2*t + t**2)*E2d[6][1])/3 - ((t-4)*t*E2d[6][2])/3)
+                else:
+                    return ((2*t**3*(2 + J[1]) + t**2*(-4 + 2*J[1] + J[2]) + 8*(-12 + 4*J[1]**2 - 17*J[2] - J[3] - 18*zeta(2) - 3*J[1]*(-18 + 4*J[2] + 3*zeta(2))) + 2*t*(4 + 16*J[1]**2 + 23*J[2] + J[3] + 18*zeta(2) + J[1]*(-26 + 16*J[2] + 9*zeta(2))))/(24*(t-4)**2) - E2d[0][0]/(9*t) + ((-32 + 20*t - 4*t**2 + t**3)*E2d[1][0])/(288*t) + ((-4 + 32/t - t)*E2d[1][1])/288 - ((640 - 96*t - 40*t**2 - 22*t**3 + t**4)*E2d[2][0])/(288*t) + ((-128 + 128/t - 20*t + t**2)*E2d[2][1])/288 + ((-64 + 52*t + 13*t**2 - t**3)*E2d[3][0])/144 + ((-16 + t)*(4 + t)*E2d[3][1])/144 + (1 + (5*t)/12 - t**2/24)*E2d[4][0] + ((4 + t)*E2d[4][1])/24 + ((14 - 8*t + t**2)*E2d[5][0])/6 + ((1 - t)*E2d[5][1])/3 - (t*(12 - 7*t + t**2)*E2d[6][0])/6 + ((t-4)*t*E2d[6][1])/6)
+
             if not n in {1,2,3,4}:
                 raise NotImplementedError(f"Finite part of divergent integrals with FeynTrop")
             # Fall-through otherwise
